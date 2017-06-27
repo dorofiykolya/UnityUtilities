@@ -6,17 +6,18 @@ namespace Utils
 {
   public class ObjectUtils
   {
-    public static string Inspect(object value, bool asJson = false, bool includePrivate = true)
+    public static string Inspect(object value, bool asJson = false, bool includePrivate = true, int maxInspectIndent = 20)
     {
       if (asJson)
       {
-        return InspectAsJson(value, includePrivate);
+        return InspectAsJson(value, includePrivate, 0, maxInspectIndent);
       }
-      return Inspect(value, "", null, includePrivate);
+      return Inspect(value, "", null, includePrivate, 0, maxInspectIndent);
     }
 
-    private static string InspectAsJson(object obj, bool includePrivate)
+    private static string InspectAsJson(object obj, bool includePrivate, int indent, int maxInspectIndent)
     {
+      if (indent >= maxInspectIndent) return "MAX_INSPECT_INDENT:" + maxInspectIndent + ", value:" + obj;
       if (obj == null)
       {
         return "null";
@@ -47,7 +48,7 @@ namespace Utils
           for (int i = 0; i < array.Length; i++)
           {
             if (i != 0) result += ",";
-            result += InspectAsJson(array.GetValue(i), includePrivate);
+            result += InspectAsJson(array.GetValue(i), includePrivate, ++indent, maxInspectIndent);
           }
           result += "]";
         }
@@ -63,9 +64,9 @@ namespace Utils
             index++;
 
             result += "{";
-            result += InspectAsJson(key, includePrivate);
+            result += InspectAsJson(key, includePrivate, ++indent, maxInspectIndent);
             result += ":";
-            result += InspectAsJson(dict[key], includePrivate);
+            result += InspectAsJson(dict[key], includePrivate, ++indent, maxInspectIndent);
             result += "}";
           }
           result += "}";
@@ -78,7 +79,7 @@ namespace Utils
           foreach (var key in collection)
           {
             if (i != 0) result += ",";
-            result += InspectAsJson(key, includePrivate);
+            result += InspectAsJson(key, includePrivate, ++indent, maxInspectIndent);
             i++;
           }
           result += "]";
@@ -95,9 +96,9 @@ namespace Utils
           {
             if (index != 0) result += ",";
             index++;
-            result += InspectAsJson(Convert.ToString(fieldInfo.Name), includePrivate);
+            result += InspectAsJson(Convert.ToString(fieldInfo.Name), includePrivate, ++indent, maxInspectIndent);
             result += ":";
-            result += InspectAsJson(fieldInfo.GetValue(obj), includePrivate);
+            result += InspectAsJson(Safe(() => fieldInfo.GetValue(obj)), includePrivate, ++indent, maxInspectIndent);
           }
 
           var propertyFlag = BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty;
@@ -109,9 +110,9 @@ namespace Utils
           {
             if (index != 0) result += ",";
             index++;
-            result += InspectAsJson(Convert.ToString(propertyInfo.Name), includePrivate);
+            result += InspectAsJson(Convert.ToString(propertyInfo.Name), includePrivate, ++indent, maxInspectIndent);
             result += ":";
-            result += InspectAsJson(propertyInfo.GetValue(obj, null), includePrivate);
+            result += InspectAsJson(Safe(() => propertyInfo.GetValue(obj, null)), includePrivate, ++indent, maxInspectIndent);
           }
           result += "}";
         }
@@ -119,8 +120,9 @@ namespace Utils
       return result;
     }
 
-    private static string Inspect(object obj, string space, string objKey, bool includePrivate)
+    private static string Inspect(object obj, string space, string objKey, bool includePrivate, int indent, int maxInspectIndent)
     {
+      if (indent >= maxInspectIndent) return "MAX_INSPECT_INDENT:" + maxInspectIndent + ", value:" + obj;
       if (obj == null)
       {
         if (objKey != null)
@@ -156,7 +158,7 @@ namespace Utils
           var array = obj as Array;
           for (int i = 0; i < array.Length; i++)
           {
-            result += Inspect(array.GetValue(i), space + "   ", Convert.ToString(i), includePrivate);
+            result += Inspect(array.GetValue(i), space + "   ", Convert.ToString(i), includePrivate, ++indent, maxInspectIndent);
             result += "\n";
           }
         }
@@ -167,7 +169,7 @@ namespace Utils
           result += "\n";
           foreach (var key in keys)
           {
-            result += Inspect(dict[key], space + "   ", Convert.ToString(key), includePrivate);
+            result += Inspect(dict[key], space + "   ", Convert.ToString(key), includePrivate, ++indent, maxInspectIndent);
             result += "\n";
           }
         }
@@ -178,7 +180,7 @@ namespace Utils
           result += "\n";
           foreach (var key in collection)
           {
-            result += Inspect(key, space + "   ", Convert.ToString(i), includePrivate);
+            result += Inspect(key, space + "   ", Convert.ToString(i), includePrivate, ++indent, maxInspectIndent);
             result += "\n";
             i++;
           }
@@ -192,7 +194,7 @@ namespace Utils
           result += "\n";
           foreach (var fieldInfo in fields)
           {
-            result += Inspect(fieldInfo.GetValue(obj), space + "   ", Convert.ToString(fieldInfo.Name), includePrivate);
+            result += Inspect(fieldInfo.GetValue(obj), space + "   ", Convert.ToString(fieldInfo.Name), includePrivate, ++indent, maxInspectIndent);
             result += "\n";
           }
 
@@ -202,12 +204,24 @@ namespace Utils
           PropertyInfo[] property = type.GetProperties(propertyFlag);
           foreach (var propertyInfo in property)
           {
-            result += Inspect(propertyInfo.GetValue(obj, null), space + "   ", Convert.ToString(propertyInfo.Name), includePrivate);
+            result += Inspect(propertyInfo.GetValue(obj, null), space + "   ", Convert.ToString(propertyInfo.Name), includePrivate, ++indent, maxInspectIndent);
             result += "\n";
           }
         }
       }
       return result;
+    }
+
+    private static object Safe(Func<object> func)
+    {
+      try
+      {
+        return func();
+      }
+      catch (Exception e)
+      {
+        return e;
+      }
     }
   }
 }
