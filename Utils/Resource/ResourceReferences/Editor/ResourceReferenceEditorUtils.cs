@@ -37,6 +37,7 @@ namespace References.Editor
 
       var lastValue = Resources.Load(path);
       label.text = label.text + string.Format(" [{0}]", string.IsNullOrEmpty(path) ? "null" : path);
+      label.tooltip = label.text;
       var newValue = EditorGUI.ObjectField(position, label, lastValue, type, false);
 
       if ((lastValue != newValue && ResourceReferenceEditorUtils.GetResourcePath(newValue) != null) || newValue == null)
@@ -54,18 +55,20 @@ namespace References.Editor
         return referenceTypeAttribute.Type;
       }
 
-      var target = property.serializedObject.targetObject.GetType().GetField(property.name);
-      var obj = target.GetValue(property.serializedObject.targetObject);
-      var typeField = typeof(ResourceReference).GetField("_type", BindingFlags.NonPublic | BindingFlags.Instance);
-      if (typeField != null)
+      var target = property.serializedObject.targetObject.GetType().GetField(property.name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.GetField | BindingFlags.SetField);
+      if (target != null)
       {
-        var type = typeField.GetValue(obj) as Type;
-        if (type != null)
+        var obj = target.GetValue(property.serializedObject.targetObject);
+        var typeField = typeof(ResourceReference).GetField("_type", BindingFlags.NonPublic | BindingFlags.Instance);
+        if (typeField != null)
         {
-          return type;
+          var type = typeField.GetValue(obj) as Type;
+          if (type != null)
+          {
+            return type;
+          }
         }
       }
-
       return typeof(Object);
     }
   }
