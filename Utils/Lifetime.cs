@@ -29,7 +29,7 @@ namespace Utils
       public static Definition Define(Lifetime lifetime, string id = "defaultName")
       {
         var definition = new Definition(id);
-        lifetime.AddAction(definition.Terminate);
+        lifetime.AddDefinition(definition);
         return definition;
       }
 
@@ -38,7 +38,7 @@ namespace Utils
         var definition = Define(Eternal);
         foreach (var lifetime in lifetimes)
         {
-          lifetime.AddAction(definition.Terminate);
+          lifetime.AddDefinition(definition);
         }
         return definition;
       }
@@ -46,7 +46,10 @@ namespace Utils
 
     public static readonly Lifetime Eternal = new Lifetime();
 
+    private static int _instances;
+
     private readonly List<Action> _actions = new List<Action>();
+    private readonly int _id;
     private bool _terminated;
 
     public static Definition Define(Lifetime lifetime, string id = "defaultName")
@@ -57,6 +60,16 @@ namespace Utils
     public static Definition Intersection(params Lifetime[] lifetimes)
     {
       return Definition.Intersection(lifetimes);
+    }
+
+    public Lifetime()
+    {
+      _id = ++_instances;
+    }
+
+    public int Id
+    {
+      get { return _id; }
     }
 
     public bool IsTerminated
@@ -82,10 +95,26 @@ namespace Utils
       }
     }
 
+    private void AddDefinition(Definition definition)
+    {
+      if (!_actions.Contains(definition.Terminate))
+      {
+        _actions.Add(definition.Terminate);
+        definition.Lifetime.AddAction(() =>
+        {
+          _actions.Remove(definition.Terminate);
+        });
+        if (IsTerminated || definition.IsTerminated)
+        {
+          definition.Terminate();
+        }
+      }
+    }
+
     private void Terminate()
     {
       _terminated = true;
-      foreach (var action in _actions)
+      foreach (var action in _actions.ToArray())
       {
         action();
       }
