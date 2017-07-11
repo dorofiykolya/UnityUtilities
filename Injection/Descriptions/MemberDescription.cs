@@ -27,6 +27,8 @@ namespace Injection
 
     public abstract Type Type { get; }
 
+    public abstract Type ProviderType { get; }
+
     public abstract void SetValue(object target, object value);
 
     public abstract object GetValue(object target);

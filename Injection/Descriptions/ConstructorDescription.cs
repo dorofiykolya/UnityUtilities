@@ -27,5 +27,6 @@ namespace Injection
 
     public override MemberKind Kind { get { return MemberKind.Constructor; } }
     public override Type Type { get { return null; } }
+    public override Type ProviderType { get { return null; } }
   }
 }

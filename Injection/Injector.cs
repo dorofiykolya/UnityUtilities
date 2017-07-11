@@ -166,14 +166,27 @@ namespace Injection
           if ((kind & MemberKind.Field) == MemberKind.Field ||
               (kind & MemberKind.Property) == MemberKind.Property)
           {
-            var provider = GetProvider(member.Type);
+            var provider = GetProvider(member.ProviderType);
             if (provider != null)
             {
-              member.SetValue(value, provider.Apply(this, member.Type));
+              if (member.ProviderType != member.Type)
+              {
+                member.SetValue(value, CreateLazy(provider, member.Type, member.ProviderType));
+              }
+              else
+              {
+                member.SetValue(value, provider.Apply(this, member.Type));
+              }
             }
           }
         }
       }
+    }
+
+    private object CreateLazy(IProvider provider, Type type, Type providerType)
+    {
+      Func<object> factory = () => provider.Apply(this, type);
+      return Activator.CreateInstance(typeof(LazyInject<>).MakeGenericType(providerType), factory);
     }
 
     private void ApplyInject(object value)

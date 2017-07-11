@@ -2,7 +2,10 @@
 
 namespace Utils
 {
-  public interface ILazy { }
+  public interface ILazy
+  {
+    Type Type { get; }
+  }
 
   public interface ILazy<out T> : ILazy
   {
@@ -40,6 +43,11 @@ namespace Utils
 
         return _value;
       }
+    }
+
+    public Type Type
+    {
+      get { return typeof(T); }
     }
   }
 }

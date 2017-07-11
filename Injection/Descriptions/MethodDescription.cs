@@ -20,6 +20,8 @@ namespace Injection
 
     public override Type Type { get { return null; } }
 
+    public override Type ProviderType { get { return null; } }
+
     public override void SetValue(object target, object value)
     {
       throw new NotImplementedException();
