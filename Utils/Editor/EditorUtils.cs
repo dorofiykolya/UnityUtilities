@@ -56,28 +56,29 @@ namespace Utils.Editor
       }
     }
 
-    public static void Header(string text, float space = 0f, bool enable = true)
+    public static void Header(string text, float space = 0f)
     {
-      var lastBackgroundColor = GUI.backgroundColor;
-      if (!enable) GUI.backgroundColor = new Color(0.8f, 0.8f, 0.8f);
-
       GUILayout.BeginHorizontal();
-      text = "<b><size=11>" + text + "</size></b>";
+      text = "<b>" + text + "</b>";
       GUILayout.Toggle(true, "☼ " + text, "dragtab", GUILayout.MinWidth(20f));
       GUILayout.EndHorizontal();
       GUILayout.Space(space);
+    }
 
-      GUI.backgroundColor = lastBackgroundColor;
-      if (!enable) GUILayout.Space(space);
+    public static void BeginVerticalHeader(string text)
+    {
+      Header(text, -4f);
+      BeginVertical();
+    }
+
+    public static void EndVerticalHeader()
+    {
+      EndVertical();
     }
 
     public static void BeginVertical(bool selected = true, float space = 2f)
     {
-      GUILayout.BeginHorizontal();
-      if (selected) EditorGUILayout.BeginHorizontal("AS TextArea", GUILayout.MinHeight(10f));
-      else EditorGUILayout.BeginHorizontal(GUILayout.MinHeight(10f));
-      GUILayout.BeginVertical();
-      GUILayout.Space(space);
+      EditorGUILayout.BeginVertical(Styles.ProgressBarBack);
     }
 
     public static bool FoldoutHeader(string text, bool enable, float space = 3f)
@@ -85,8 +86,7 @@ namespace Utils.Editor
       var lastBackgroundColor = GUI.backgroundColor;
       if (!enable) GUI.backgroundColor = new Color(0.8f, 0.8f, 0.8f);
 
-      GUILayout.BeginHorizontal();
-      text = "<b><size=11>" + text + "</size></b>";
+      text = "<b>" + text + "</b>";
 
       if (enable)
       {
@@ -98,7 +98,6 @@ namespace Utils.Editor
       }
 
       if (!GUILayout.Toggle(true, text, "dragtab", GUILayout.MinWidth(20f))) enable = !enable;
-      GUILayout.EndHorizontal();
 
       GUI.backgroundColor = lastBackgroundColor;
       if (!enable) GUILayout.Space(space);
@@ -108,30 +107,19 @@ namespace Utils.Editor
 
     public static void EndVertical(float space = 3f)
     {
-      GUILayout.Space(3f);
-      GUILayout.EndVertical();
-      EditorGUILayout.EndHorizontal();
-      GUILayout.Space(3f);
-      GUILayout.EndHorizontal();
+      EditorGUILayout.EndVertical();
+    }
+
+    public static void BeginHorizontal(bool selected = true, float space = 0f)
+    {
+      EditorGUILayout.BeginHorizontal(Styles.ProgressBarBack, GUILayout.MinHeight(10f));
       GUILayout.Space(space);
     }
 
-    public static void BeginHorizontal(bool selected = true, float space = 2f)
-    {
-      GUILayout.BeginVertical();
-      GUILayout.Space(space);
-      if (selected) EditorGUILayout.BeginHorizontal("AS TextArea", GUILayout.MinHeight(10f));
-      else EditorGUILayout.BeginHorizontal(GUILayout.MinHeight(10f));
-      GUILayout.Space(space);
-    }
-
-    public static void EndHorizontal(float space = 3f)
+    public static void EndHorizontal(float space = 0f)
     {
       GUILayout.Space(space);
       EditorGUILayout.EndHorizontal();
-      GUILayout.Space(space);
-      GUILayout.EndVertical();
-      GUILayout.Space(space);
     }
 
     public static int UpDownArrows(GUIContent label, int value, GUIStyle labelStyle, GUIStyle upArrow, GUIStyle downArrow)
