@@ -14,7 +14,7 @@ namespace Injection
       if (_propertyInfo != null)
       {
         _type = _propertyInfo.PropertyType;
-        if (_type.IsGenericType && _type.GetGenericTypeDefinition() == typeof(LazyInject<>))
+        if (_type.IsGenericType && _type.GetGenericTypeDefinition() == typeof(LI<>))
         {
           _type = _type.GetGenericArguments()[0];
         }

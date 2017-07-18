@@ -2,17 +2,7 @@
 
 namespace Utils
 {
-  public interface ILazy
-  {
-    Type Type { get; }
-  }
-
-  public interface ILazy<out T> : ILazy
-  {
-    T Value { get; }
-  }
-
-  public class Lazy<T> : ILazy<T>
+  public class Lazy<T>
   {
     public static implicit operator T(Lazy<T> lazy)
     {

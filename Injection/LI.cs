@@ -2,9 +2,13 @@
 
 namespace Injection
 {
-  public sealed class LazyInject<T>
+  /// <summary>
+  /// Lazy Inject
+  /// </summary>
+  /// <typeparam name="T"></typeparam>
+  public sealed class LI<T>
   {
-    public static implicit operator T(LazyInject<T> lazy)
+    public static implicit operator T(LI<T> lazy)
     {
       return lazy.Value;
     }
@@ -13,7 +17,7 @@ namespace Injection
     private T _value;
     private bool _initialized;
 
-    public LazyInject(Func<object> factory)
+    public LI(Func<object> factory)
     {
       _factory = factory;
     }

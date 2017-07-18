@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Utils.Collections
 {
-  public class PriorityQueueComparable<T> where T : IComparable
+  public class PriorityQueueComparable<T> where T : IComparable<T>
   {
     private readonly List<T> _data;
 

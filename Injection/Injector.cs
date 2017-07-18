@@ -186,7 +186,7 @@ namespace Injection
     private object CreateLazy(IProvider provider, Type type, Type providerType)
     {
       Func<object> factory = () => provider.Apply(this, type);
-      return Activator.CreateInstance(typeof(LazyInject<>).MakeGenericType(providerType), factory);
+      return Activator.CreateInstance(typeof(LI<>).MakeGenericType(providerType), factory);
     }
 
     private void ApplyInject(object value)

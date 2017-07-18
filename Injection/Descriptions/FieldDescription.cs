@@ -14,7 +14,7 @@ namespace Injection
       if (_fieldInfo != null)
       {
         _type = _fieldInfo.FieldType;
-        if (_type.IsGenericType && _type.GetGenericTypeDefinition() == typeof(LazyInject<>))
+        if (_type.IsGenericType && _type.GetGenericTypeDefinition() == typeof(LI<>))
         {
           _type = _type.GetGenericArguments()[0];
         }
