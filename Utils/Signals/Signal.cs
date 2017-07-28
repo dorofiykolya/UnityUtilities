@@ -171,6 +171,9 @@ namespace Utils
         }
         catch (Exception ex)
         {
+#if UNITY_EDITOR
+          throw ex;
+#endif
           Debug.LogError("Error firing, exception: " + ex);
         }
       }
