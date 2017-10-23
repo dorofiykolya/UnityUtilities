@@ -1,10 +1,12 @@
 ﻿using System;
 
-[Flags]
-public enum Axis3
+namespace Utils
 {
-  X = 1,
-  Y = 2,
-  Z = 4
+  [Flags]
+  public enum Axis3
+  {
+    X = 1,
+    Y = 2,
+    Z = 4
+  }
 }
-

@@ -47,6 +47,16 @@ namespace Utils.Editor
     {
       _path = EditorGUILayout.TextField("Path:", _path);
       _name = EditorGUILayout.TextField("Name:", _name);
+      if (GUILayout.Button("Browse"))
+      {
+        var path = EditorUtility.SaveFilePanelInProject("Save Scriptable Object", _name, "asset", "save scriptable object",
+          Path.Combine(_path, _name + ".asset"));
+        if (path.Length != 0)
+        {
+          _path = Path.GetDirectoryName(path);
+          _name = Path.GetFileNameWithoutExtension(path);
+        }
+      }
       if (GUILayout.Button("Create"))
       {
         if (!Directory.Exists(_path))
