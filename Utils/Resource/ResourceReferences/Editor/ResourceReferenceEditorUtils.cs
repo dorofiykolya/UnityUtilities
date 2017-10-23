@@ -33,8 +33,8 @@ namespace References.Editor
     {
       var serializedProperty = property.FindPropertyRelative("_path");
       var path = serializedProperty.stringValue;
-      var type = GetResourceType(property);
-
+      var serializedType = property.FindPropertyRelative("_serializedType");
+      var type = System.Type.GetType(serializedType.stringValue);
       var lastValue = Resources.Load(path);
       label.text = label.text + string.Format(" [{0}]", string.IsNullOrEmpty(path) ? "null" : path);
       label.tooltip = label.text;
