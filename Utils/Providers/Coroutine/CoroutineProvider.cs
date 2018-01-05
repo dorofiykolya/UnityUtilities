@@ -14,7 +14,7 @@ namespace Utils
 
     public Coroutine StartCoroutine(IEnumerator enumerator)
     {
-      if (!_monoBehaviour.gameObject.activeSelf && !Application.isPlaying) return null;
+      if (!_monoBehaviour.gameObject.activeSelf) return null;
       var result = _monoBehaviour.StartCoroutine(enumerator);
       return result;
     }
