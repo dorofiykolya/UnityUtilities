@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -122,6 +123,36 @@ namespace Utils.Editor
         RemoveMissingScriptsInGO(item, ref goCount, ref componentsCount, ref missingCount);
       }
       goCountParent++;
+    }
+
+    [MenuItem("Assets/Tools/Rename To Underscore")]
+    private static void RenameToUnderscore()
+    {
+      var assets = Selection.objects;
+      float index = 0f;
+      float total = assets.Length;
+      try
+      {
+        foreach (var asset in assets)
+        {
+          index++;
+          EditorUtility.DisplayProgressBar("RENAME FILES", asset.name, index / total);
+
+          var path = AssetDatabase.GetAssetPath(asset);
+          string fileName = Path.GetFileNameWithoutExtension(path);
+          var newFileName = Regex.Replace(fileName, "(?<=[a-z0-9])[A-Z]", m => "_" + m.Value);
+          newFileName = newFileName.Replace("-", "_");
+          newFileName = newFileName.ToLowerInvariant();
+          AssetDatabase.RenameAsset(path, newFileName);
+        }
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+      }
+      finally
+      {
+        EditorUtility.ClearProgressBar();
+      }
     }
 
     [MenuItem("Tools/Remove Missing Scripts (On Selected GameObject)")]

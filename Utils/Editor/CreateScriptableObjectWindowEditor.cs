@@ -15,7 +15,7 @@ namespace Utils.Editor
       {
         if (typeof(ScriptableObject).IsAssignableFrom(monoScript.GetClass()))
         {
-          GetWindow<CreateScriptableObjectWindowEditor>("Factory SO").Set(monoScript).ShowPopup();
+          Open(monoScript);
         }
       }
     }
@@ -34,6 +34,11 @@ namespace Utils.Editor
     private Type _scriptableObject;
     private string _path = "Assets";
     private string _name = "CreateScriptableObject";
+
+    public static void Open(MonoScript script)
+    {
+      GetWindow<CreateScriptableObjectWindowEditor>("Factory SO").Set(script).ShowPopup();
+    }
 
     private CreateScriptableObjectWindowEditor Set(MonoScript script)
     {
