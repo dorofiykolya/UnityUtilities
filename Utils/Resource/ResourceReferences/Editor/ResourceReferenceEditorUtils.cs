@@ -34,7 +34,8 @@ namespace References.Editor
       var serializedProperty = property.FindPropertyRelative("_path");
       var path = serializedProperty.stringValue;
       var serializedType = property.FindPropertyRelative("_serializedType");
-      var type = System.Type.GetType(serializedType.stringValue);
+      var type = GetResourceType(serializedType);
+      if (type == null) type = System.Type.GetType(serializedType.stringValue.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries)[0].Trim());
       var lastValue = Resources.Load(path);
       label.text = label.text + string.Format(" [{0}]", string.IsNullOrEmpty(path) ? "null" : path);
       label.tooltip = label.text;
@@ -55,20 +56,28 @@ namespace References.Editor
         return referenceTypeAttribute.Type;
       }
 
-      var target = property.serializedObject.targetObject.GetType().GetField(property.name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.GetField | BindingFlags.SetField);
-      if (target != null)
+      try
       {
-        var obj = target.GetValue(property.serializedObject.targetObject);
-        var typeField = typeof(ResourceReference).GetField("_type", BindingFlags.NonPublic | BindingFlags.Instance);
-        if (typeField != null)
+        var target = property.serializedObject.targetObject.GetType().GetField(property.name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.GetField | BindingFlags.SetField);
+        if (target != null)
         {
-          var type = typeField.GetValue(obj) as Type;
-          if (type != null)
+          var obj = target.GetValue(property.serializedObject.targetObject);
+          var typeField = typeof(ResourceReference).GetField("_type", BindingFlags.NonPublic | BindingFlags.Instance);
+          if (typeField != null)
           {
-            return type;
+            var type = typeField.GetValue(obj) as Type;
+            if (type != null)
+            {
+              return type;
+            }
           }
         }
       }
+      catch (Exception e)
+      {
+
+      }
+
       return typeof(Object);
     }
   }
