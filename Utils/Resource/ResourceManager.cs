@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Utils
 {
@@ -17,24 +16,16 @@ namespace Utils
       _map = new Dictionary<string, ResourceResult>();
     }
 
-    public ResourceResult GetPrefab(string prefab)
+    public ResourceResult<T> Get<T>(string prefab) where T : UnityEngine.Object
     {
       ResourceResult result;
       if (!_map.TryGetValue(prefab, out result))
       {
-        result = new ResourceResult(_coroutineProvider, prefab);
+        result = new ResourceResult<T>(_coroutineProvider, prefab);
         _map[prefab] = result;
       }
 
-      return result;
-    }
-
-    public void Collect()
-    {
-      foreach (var resource in _map.Values)
-      {
-        resource.Collect();
-      }
+      return (ResourceResult<T>)result;
     }
 
     public void Dispose()
@@ -47,139 +38,54 @@ namespace Utils
 
     public struct ResourceLoadProgress
     {
-      public string PrefabPath;
+      public string Path;
       public float Progress;
     }
 
     public class ResourceResult : IDisposable
     {
-      private readonly List<GameObject> _instances;
-      private readonly Stack<GameObject> _pool;
+      public virtual void Dispose()
+      {
+
+      }
+    }
+
+    public class ResourceResult<T> : ResourceResult where T : UnityEngine.Object
+    {
       private readonly ICoroutineProvider _coroutineProvider;
-      private readonly string _prefab;
-      private readonly Signal<ResourceResult> _onResult;
-      private GameObject _prefabResult;
+      private readonly string _path;
+      private readonly Signal<ResourceResult<T>> _onResult;
+      private T _result;
       private Coroutine _coroutine;
       private ResourceRequest _loadAsync;
       private bool _unload;
       private float _progress;
 
-      public ResourceResult(ICoroutineProvider coroutineProvider, string prefab)
+      public ResourceResult(ICoroutineProvider coroutineProvider, string path)
       {
-        _instances = new List<GameObject>();
-        _pool = new Stack<GameObject>();
         _coroutineProvider = coroutineProvider;
-        _prefab = prefab;
-        _onResult = new Signal<ResourceResult>(Lifetime.Eternal);
+        _path = path;
+        _onResult = new Signal<ResourceResult<T>>(Lifetime.Eternal);
       }
 
       public float Progress { get { return _progress; } }
       public bool IsCompleted { get; private set; }
       public bool IsError { get; private set; }
-      public int Instances { get { return _instances.Count; } }
-      public GameObject Prefab { get { return _prefabResult; } }
-
-      public T Instantiate<T>() where T : Component
-      {
-        T instance;
-        if (_pool.Count != 0)
-        {
-          instance = _pool.Pop().GetComponent<T>();
-        }
-        else
-        {
-          var prefab = GetPrefab();
-          instance = Object.Instantiate(prefab).GetComponent<T>();
-        }
-        _instances.Add(instance.gameObject);
-        return instance;
-      }
-
-      public T Instantiate<T>(Transform transform) where T : Component
-      {
-        T instance;
-        if (_pool.Count != 0)
-        {
-          instance = _pool.Pop().GetComponent<T>();
-          instance.transform.SetParent(transform, false);
-        }
-        else
-        {
-          var prefab = GetPrefab();
-          instance = ((GameObject)Object.Instantiate(prefab, transform, false)).GetComponent<T>();
-        }
-        _instances.Add(instance.gameObject);
-        return instance;
-      }
+      public T Result { get { return _result; } }
 
       public void Collect()
       {
-        foreach (var gameObject in _pool)
-        {
-          if (gameObject != null)
-          {
-            Object.Destroy(gameObject);
-          }
-        }
-        _pool.Clear();
+        UnityEngine.Object.Destroy(_result);
+        _result = null;
       }
 
-      public bool IsInstantiated(GameObject value)
-      {
-        return _instances.Contains(value);
-      }
-
-      public bool IsReleased(GameObject gameObject)
-      {
-        return _pool.Contains(gameObject);
-      }
-
-      public void Release(GameObject value)
-      {
-        if (value == null)
-        {
-          throw new NullReferenceException("value can't bee null:" + _prefab);
-        }
-        if (_pool.Contains(value))
-        {
-          throw new ArgumentException("pool contains this gameObject: " + _prefab);
-        }
-        if (!_instances.Contains(value))
-        {
-          throw new ArgumentException("gameObject not in instance list: " + _prefab + ", value in pool: " + (_pool.Contains(value)));
-        }
-        _instances.Remove(value);
-
-        _pool.Push(value);
-      }
-
-      public void Release(Component value)
-      {
-        Release(value.gameObject);
-      }
-
-      public void Dispose()
+      public override void Dispose()
       {
         _unload = true;
-        if (_instances.Count != 0)
-        {
-          foreach (var gameObject in _instances)
-          {
-            Object.Destroy(gameObject);
-          }
-          _instances.Clear();
-        }
-        if (_pool.Count != 0)
-        {
-          foreach (var gameObject in _pool)
-          {
-            Object.Destroy(gameObject);
-          }
-          _pool.Clear();
-        }
+        Collect();
       }
 
-      public void LoadAsync(Lifetime lifetime, Action<ResourceResult> onResult)
+      public ResourceResult<T> LoadAsync(Lifetime lifetime, Action<ResourceResult<T>> onResult)
       {
         if (!lifetime.IsTerminated)
         {
@@ -196,11 +102,13 @@ namespace Utils
             IsCompleted = false;
             IsError = false;
             _unload = false;
-            _loadAsync = Resources.LoadAsync<GameObject>(_prefab);
+            _loadAsync = Resources.LoadAsync<T>(_path);
             StopCoroutine();
             _coroutine = _coroutineProvider.StartCoroutine(LoadAsyncProcess());
           }
         }
+
+        return this;
       }
 
       private IEnumerator LoadAsyncProcess()
@@ -210,7 +118,7 @@ namespace Utils
           if (_unload)
           {
             _loadAsync = null;
-            _prefabResult = null;
+            _result = null;
             IsCompleted = false;
             yield break;
           }
@@ -219,9 +127,9 @@ namespace Utils
         }
 
         IsCompleted = true;
-        _prefabResult = _loadAsync.asset as GameObject;
+        _result = _loadAsync.asset as T;
         _loadAsync = null;
-        if (_prefabResult == null)
+        if (_result == null)
         {
           IsError = true;
         }
@@ -239,11 +147,6 @@ namespace Utils
       private void FireOnResult()
       {
         _onResult.Fire(this);
-      }
-
-      private GameObject GetPrefab()
-      {
-        return _prefabResult ?? (_prefabResult = Resources.Load<GameObject>(_prefab));
       }
     }
   }
