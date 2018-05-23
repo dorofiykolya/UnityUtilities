@@ -35,7 +35,11 @@ namespace References.Editor
       var path = serializedProperty.stringValue;
       var serializedType = property.FindPropertyRelative("_serializedType");
       var type = GetResourceType(serializedType);
-      if (type == null) type = System.Type.GetType(serializedType.stringValue.Split(new[] { ", " }, StringSplitOptions.RemoveEmptyEntries)[0].Trim());
+      if (type == null) type = Type.GetType(serializedType.stringValue);
+      if (type != null)
+      {
+        serializedType.stringValue = ResourceReference.SerializeType(type);
+      }
       var lastValue = Resources.Load(path);
       label.text = label.text + string.Format(" [{0}]", string.IsNullOrEmpty(path) ? "null" : path);
       label.tooltip = label.text;

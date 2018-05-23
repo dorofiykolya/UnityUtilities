@@ -7,6 +7,11 @@ namespace References
   [Serializable]
   public class ResourceReference : ISerializationCallbackReceiver
   {
+    public static string SerializeType(Type type)
+    {
+      return type.FullName + ", " + type.Assembly.GetName().Name;
+    }
+
     [SerializeField]
     private string _path;
     [SerializeField]
@@ -17,13 +22,13 @@ namespace References
     public ResourceReference()
     {
       _type = typeof(Object);
-      _serializedType = _type.FullName + ", " + _type.Assembly.GetName().Name;
+      _serializedType = SerializeType(_type);
     }
 
     public ResourceReference(Type type)
     {
       _type = type;
-      _serializedType = _type.FullName + ", " + _type.Assembly.GetName().Name;
+      _serializedType = SerializeType(_type);
     }
 
     public string Path
@@ -41,19 +46,19 @@ namespace References
       return Resources.Load<T>(_path);
     }
 
-    void ISerializationCallbackReceiver.OnAfterDeserialize() 
+    void ISerializationCallbackReceiver.OnAfterDeserialize()
     {
-      _type = System.Type.GetType(_serializedType);
+      _type = Type.GetType(_serializedType);
 
       if (_type == null)
       {
-        throw new InvalidOperationException(string.Format("'{0}' type was not found", _serializedType));
+        _type = typeof(Object);
       }
-		}
+    }
 
-    void ISerializationCallbackReceiver.OnBeforeSerialize() 
+    void ISerializationCallbackReceiver.OnBeforeSerialize()
     {
-		}
+    }
   }
 
   [Serializable]
