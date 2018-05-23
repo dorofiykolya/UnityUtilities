@@ -136,6 +136,7 @@ namespace Utils
 
       public void Release(GameObject value)
       {
+        if (_unload) return;
         if (value == null)
         {
           throw new NullReferenceException("value can't bee null:" + _prefab);
