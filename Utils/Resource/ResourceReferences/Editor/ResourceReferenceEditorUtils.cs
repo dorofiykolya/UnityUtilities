@@ -41,14 +41,18 @@ namespace References.Editor
         serializedType.stringValue = ResourceReference.SerializeType(type);
       }
       var lastValue = Resources.Load(path);
-      label.text = label.text + string.Format(" [{0}]", string.IsNullOrEmpty(path) ? "null" : path);
+      if (lastValue == null)
+      {
+        lastValue = Recovery(property);
+      }
+
+      var guidProperty = property.FindPropertyRelative("_guid");
+      
+      label.text = (type != null ? type.Name : string.Empty) + string.Format(" [{0}]", string.IsNullOrEmpty(path) ? "null" : path);
       label.tooltip = label.text;
       var newValue = EditorGUI.ObjectField(position, label, lastValue, type, false);
-
-      if ((lastValue != newValue && ResourceReferenceEditorUtils.GetResourcePath(newValue) != null) || newValue == null)
-      {
-        serializedProperty.stringValue = ResourceReferenceEditorUtils.GetResourcePath(newValue);
-      }
+      guidProperty.stringValue = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(newValue));
+      serializedProperty.stringValue = ResourceReferenceEditorUtils.GetResourcePath(newValue);
     }
 
     private Type GetResourceType(SerializedProperty property)
@@ -84,5 +88,31 @@ namespace References.Editor
 
       return typeof(Object);
     }
+
+    private static UnityEngine.Object Recovery(SerializedProperty property)
+    {
+      if (property != null)
+      {
+        var guidProperty = property.FindPropertyRelative("_guid");
+
+        var assetPath = AssetDatabase.GUIDToAssetPath(guidProperty.stringValue);
+        if (!string.IsNullOrEmpty(assetPath))
+        {
+          int rIndex = assetPath.LastIndexOf("Resources");
+          if (rIndex != -1)
+          {
+            assetPath = assetPath.Remove(0, rIndex + "Resources".Length).Trim('/', '\\', ' ', '\t', '\r', '\n');
+            assetPath = Path.ChangeExtension(assetPath, "").Trim('.', ',');
+            var newValue = Resources.Load(assetPath);
+            guidProperty.stringValue = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(newValue));
+            property.FindPropertyRelative("_path").stringValue = ResourceReferenceEditorUtils.GetResourcePath(newValue);
+            return newValue;
+          }
+        }
+      }
+
+      return null;
+    }
+
   }
 }

@@ -13,11 +13,18 @@ namespace References
     }
 
     [SerializeField]
+    private string _serializedType;
+    [SerializeField]
     private string _path;
     [SerializeField]
     private Type _type;
+
+#if UNITY_EDITOR
+
     [SerializeField]
-    private string _serializedType;
+    private string _guid;
+
+#endif
 
     public ResourceReference()
     {
