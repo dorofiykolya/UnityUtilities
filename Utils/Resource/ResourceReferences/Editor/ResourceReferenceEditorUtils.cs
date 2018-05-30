@@ -47,8 +47,8 @@ namespace References.Editor
       }
 
       var guidProperty = property.FindPropertyRelative("_guid");
-      
-      label.text = (type != null ? type.Name : string.Empty) + string.Format(" [{0}]", string.IsNullOrEmpty(path) ? "null" : path);
+
+      label.text = label.text + ": " + (type != null ? type.Name : string.Empty) + string.Format(" [{0}]", string.IsNullOrEmpty(path) ? "null" : path);
       label.tooltip = label.text;
       var newValue = EditorGUI.ObjectField(position, label, lastValue, type, false);
       guidProperty.stringValue = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(newValue));

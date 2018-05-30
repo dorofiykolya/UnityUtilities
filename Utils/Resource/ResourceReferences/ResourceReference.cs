@@ -13,11 +13,11 @@ namespace References
     }
 
     [SerializeField]
+    private Type _type;
+    [SerializeField]
     private string _serializedType;
     [SerializeField]
     private string _path;
-    [SerializeField]
-    private Type _type;
 
 #if UNITY_EDITOR
 
