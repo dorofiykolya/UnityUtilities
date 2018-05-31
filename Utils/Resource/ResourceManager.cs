@@ -75,7 +75,7 @@ namespace Utils
 
       public void Collect()
       {
-        UnityEngine.Object.Destroy(_result);
+        Resources.UnloadAsset(_result);
         _result = null;
       }
 
