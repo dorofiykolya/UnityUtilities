@@ -30,7 +30,7 @@ namespace Utils
       else
       {
         var prefab = GetPrefab();
-        instance = Object.Instantiate(prefab).GetComponent<T>();
+        instance = Object.Instantiate<T>(prefab);
       }
       _instances.Add(instance.gameObject);
       return instance;
@@ -47,7 +47,7 @@ namespace Utils
       else
       {
         var prefab = GetPrefab();
-        instance = ((GameObject)Object.Instantiate(prefab, transform, false)).GetComponent<T>();
+        instance = Object.Instantiate<T>(prefab, transform, false);
       }
       _instances.Add(instance.gameObject);
       return instance;
@@ -130,9 +130,9 @@ namespace Utils
       _prefab = null;
     }
 
-    private GameObject GetPrefab()
+    private T GetPrefab()
     {
-      return _prefab.gameObject;
+      return _prefab;
     }
   }
 }
