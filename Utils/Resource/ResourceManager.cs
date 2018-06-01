@@ -75,8 +75,14 @@ namespace Utils
 
       public void Collect()
       {
-        Resources.UnloadAsset(_result);
-        _result = null;
+        if (_result != null)
+        {
+          Resources.UnloadAsset(_result);
+          _result = null;
+        }
+
+        IsCompleted = false;
+        IsError = false;
       }
 
       public override void Dispose()

@@ -10,10 +10,14 @@ namespace Utils
     private readonly List<GameObject> _instances;
     private readonly Stack<GameObject> _pool;
     private T _prefab;
+    private readonly Action<GameObject> _onInstantiate;
+    private readonly Action<GameObject> _onRelease;
 
-    public PrefabPoolFactory(T prefab)
+    public PrefabPoolFactory(T prefab, Action<GameObject> onInstantiate = null, Action<GameObject> onRelease = null)
     {
       _prefab = prefab;
+      _onInstantiate = onInstantiate;
+      _onRelease = onRelease;
       _pool = new Stack<GameObject>();
       _instances = new List<GameObject>();
     }
@@ -33,6 +37,9 @@ namespace Utils
         instance = Object.Instantiate<T>(prefab);
       }
       _instances.Add(instance.gameObject);
+
+      if (_onInstantiate != null) _onInstantiate(instance.gameObject);
+
       return instance;
     }
 
@@ -50,6 +57,9 @@ namespace Utils
         instance = Object.Instantiate<T>(prefab, transform, false);
       }
       _instances.Add(instance.gameObject);
+
+      if (_onInstantiate != null) _onInstantiate(instance.gameObject);
+
       return instance;
     }
 
@@ -102,6 +112,8 @@ namespace Utils
       _instances.Remove(value);
 
       _pool.Push(value);
+
+      if (_onRelease != null) _onRelease(value);
     }
 
     public void Release(T value)
