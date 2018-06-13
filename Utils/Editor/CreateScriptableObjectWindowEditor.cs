@@ -35,15 +35,15 @@ namespace Utils.Editor
     private string _path = "Assets";
     private string _name = "CreateScriptableObject";
 
-    public static void Open(MonoScript script)
+    public static void Open(MonoScript script, string path = null)
     {
-      GetWindow<CreateScriptableObjectWindowEditor>("Factory SO").Set(script).ShowPopup();
+      GetWindow<CreateScriptableObjectWindowEditor>("Factory SO").Set(script, path).ShowPopup();
     }
 
-    private CreateScriptableObjectWindowEditor Set(MonoScript script)
+    private CreateScriptableObjectWindowEditor Set(MonoScript script, string path)
     {
       _name = script.name;
-      _path = Path.GetDirectoryName(AssetDatabase.GetAssetPath(script));
+      _path = path ?? Path.GetDirectoryName(AssetDatabase.GetAssetPath(script));
       _scriptableObject = script.GetClass();
       return this;
     }
