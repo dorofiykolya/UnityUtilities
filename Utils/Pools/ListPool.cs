@@ -34,6 +34,7 @@ public class ListPool
 public class ListPool<T>
 {
   private static readonly Stack<List<T>> Stack = new Stack<List<T>>(8);
+  private static readonly object Lock = new object();
 
   public static List<T> Pop()
   {
@@ -62,26 +63,39 @@ public class ListPool<T>
 
   private static List<T> PopList()
   {
-    if (Stack.Count == 0) return new List<T>(8);
-    return Stack.Pop();
+    lock (Lock)
+    {
+      if (Stack.Count == 0)
+      {
+        return new List<T>(8);
+      }
+      return Stack.Pop();
+    }
   }
 
   private static List<T> PopList(int capacity)
   {
-    if (Stack.Count == 0) return new List<T>(capacity);
-    var result = Stack.Pop();
-    if (result.Capacity < capacity) result.Capacity = capacity;
-    return result;
+    lock (Lock)
+    {
+      if (Stack.Count == 0) return new List<T>(capacity);
+      var result = Stack.Pop();
+      if (result.Capacity < capacity) result.Capacity = capacity;
+      return result;
+    }
   }
 
   private static void PushList(List<T> list)
   {
     list.Clear();
-    if (Stack.Contains(list))
+    lock (Lock)
     {
-      throw new ArgumentException();
+      if (Stack.Contains(list))
+      {
+        throw new ArgumentException();
+      }
+
+      Stack.Push(list);
     }
-    Stack.Push(list);
   }
 }
 

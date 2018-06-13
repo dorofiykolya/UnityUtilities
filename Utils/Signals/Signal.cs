@@ -74,7 +74,7 @@ namespace Utils
       List<Action> copy;
       lock (_lock)
       {
-        copy = new List<Action>(_sinks);
+        copy = ListPool<Action>.Pop(_sinks);
       }
 
       foreach (var action in copy)
@@ -88,6 +88,8 @@ namespace Utils
           Debug.LogError("Error firing, exception: " + ex);
         }
       }
+
+      ListPool.Push(copy);
     }
   }
 
@@ -160,7 +162,7 @@ namespace Utils
       List<Action<T1>> copy;
       lock (_lock)
       {
-        copy = new List<Action<T1>>(_sinks);
+        copy = ListPool<Action<T1>>.Pop(_sinks);
       }
 
       foreach (var action in copy)
@@ -177,6 +179,7 @@ namespace Utils
           Debug.LogError("Error firing, exception: " + ex);
         }
       }
+      ListPool.Push(copy);
     }
   }
 
@@ -249,7 +252,7 @@ namespace Utils
       List<Action<T1, T2>> copy;
       lock (_lock)
       {
-        copy = new List<Action<T1, T2>>(_sinks);
+        copy = ListPool<Action<T1, T2>>.Pop(_sinks);
       }
 
       foreach (var action in copy)
@@ -263,6 +266,7 @@ namespace Utils
           Debug.LogError("Error firing, exception: " + ex);
         }
       }
+      ListPool.Push(copy);
     }
   }
 }
