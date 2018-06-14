@@ -38,6 +38,16 @@ namespace References
       _serializedType = SerializeType(_type);
     }
 
+#if UNITY_EDITOR
+    public ResourceReference(Type type, string path, string guid = null)
+    {
+      _type = type;
+      _serializedType = SerializeType(_type);
+      _path = path;
+      _guid = guid;
+    }
+#endif
+
     public string Path
     {
       get { return _path; }
