@@ -1,0 +1,12 @@
+{
+    "name": "ResourceReferenceEditor",
+    "references": [
+        "Utilities"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}
