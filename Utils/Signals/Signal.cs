@@ -85,6 +85,10 @@ namespace Utils
         }
         catch (Exception ex)
         {
+#if UNITY_EDITOR
+          Debug.LogError(ex.StackTrace);
+          throw ex;
+#endif
           Debug.LogError("Error firing, exception: " + ex);
         }
       }
@@ -174,6 +178,7 @@ namespace Utils
         catch (Exception ex)
         {
 #if UNITY_EDITOR
+          Debug.LogError(ex.StackTrace);
           throw ex;
 #endif
           Debug.LogError("Error firing, exception: " + ex);
@@ -263,6 +268,9 @@ namespace Utils
         }
         catch (Exception ex)
         {
+#if UNITY_EDITOR
+          throw ex;
+#endif
           Debug.LogError("Error firing, exception: " + ex);
         }
       }
