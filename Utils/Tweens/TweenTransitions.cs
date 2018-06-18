@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 namespace Utils.Tweens
 {
@@ -7,6 +8,11 @@ namespace Utils.Tweens
     public static float Linear(float ratio)
     {
       return ratio;
+    }
+
+    public static float ExpoOut(float ratio)
+    {
+      return 1f - Mathf.Pow(2f, -10f * ratio);
     }
 
     public static float EaseOutBack(float ratio)
