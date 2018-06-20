@@ -16,7 +16,7 @@ namespace Utils.Commands
     {
       _lifetime = lifetime;
       _messageType = messageType;
-      _injector = injector;
+      _injector = new Injector(injector);
       _commands = new List<CommandFactory>();
     }
 
@@ -37,6 +37,7 @@ namespace Utils.Commands
       foreach (var factory in _commands.ToArray())
       {
         var command = factory.Factory(factory.Lifetime.Lifetime);
+        
         _injector.Map<Lifetime.Definition>().ToValue(factory.Lifetime);
         _injector.Map(_messageType).ToValue(message);
         _injector.Inject(command);
