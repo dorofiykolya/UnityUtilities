@@ -95,6 +95,22 @@ namespace Utils
         return instance;
       }
 
+      public GameObject Instantiate()
+      {
+        GameObject instance;
+        if (_pool.Count != 0)
+        {
+          instance = _pool.Pop();
+        }
+        else
+        {
+          var prefab = GetPrefab();
+          instance = Object.Instantiate(prefab);
+        }
+        _instances.Add(instance);
+        return instance;
+      }
+
       public T Instantiate<T>(Transform transform) where T : Component
       {
         T instance;
@@ -107,6 +123,23 @@ namespace Utils
         {
           var prefab = GetPrefab();
           instance = ((GameObject)Object.Instantiate(prefab, transform, false)).GetComponent<T>();
+        }
+        _instances.Add(instance.gameObject);
+        return instance;
+      }
+
+      public GameObject Instantiate(Transform transform)
+      {
+        GameObject instance;
+        if (_pool.Count != 0)
+        {
+          instance = _pool.Pop();
+          instance.transform.SetParent(transform, false);
+        }
+        else
+        {
+          var prefab = GetPrefab();
+          instance = Object.Instantiate(prefab, transform, false);
         }
         _instances.Add(instance.gameObject);
         return instance;
