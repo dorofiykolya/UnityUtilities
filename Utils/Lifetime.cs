@@ -114,10 +114,13 @@ namespace Utils
     private void Terminate()
     {
       _terminated = true;
-      foreach (var action in _actions.ToArray())
+      var array = _actions.ToArray();
+      for (var i = array.Length - 1; i >= 0; i--)
       {
+        var action = array[i];
         action();
       }
+
       _actions.Clear();
     }
   }
@@ -214,10 +217,13 @@ namespace Utils
     private void Terminate(T value)
     {
       _terminated = true;
-      foreach (var action in _actions)
+      var array = _actions.ToArray();
+      for (var i = array.Length - 1; i >= 0; i--)
       {
+        var action = array[i];
         action(value);
       }
+
       _actions.Clear();
     }
   }
