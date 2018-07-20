@@ -23,7 +23,7 @@ namespace Injection
 
     public IProvider Provider
     {
-      get { return _injector.GetProvider(_type); }
+      get { return _injector.GetProvider(_type, false); }
     }
 
     public void ToFactory<TF>() where TF : class

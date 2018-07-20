@@ -62,7 +62,7 @@ namespace Injection
 
     public override void Apply(object target, Type targetType, IInjector injector)
     {
-      var provider = injector.GetProvider(ProviderType);
+      var provider = injector.GetProvider(ProviderType, true);
       SetValue(target, provider.Apply(injector, targetType));
     }
   }

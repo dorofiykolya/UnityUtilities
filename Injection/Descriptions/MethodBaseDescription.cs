@@ -42,7 +42,7 @@ namespace Injection
       {
         Type parameterType = parameterInfos[i].ParameterType;
         var isLazy = parameterType.IsGenericType && parameterType.GetGenericTypeDefinition() == typeof(LI<>);
-        var provider = injector.GetProvider(isLazy ? parameterType.GetGenericArguments()[0] : parameterType);
+        var provider = injector.GetProvider(isLazy ? parameterType.GetGenericArguments()[0] : parameterType, true);
         if (provider == null)
         {
           if (parameterInfos[i].IsOptional)

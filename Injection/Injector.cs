@@ -7,6 +7,7 @@ namespace Injection
   {
     private readonly Dictionary<Type, IMapping> _map;
     private readonly Dictionary<Type, IProvider> _provider;
+    private IInjector _parent;
 
     public Injector() : this(null, null) { }
 
@@ -31,7 +32,7 @@ namespace Injection
       DescriptionProvider.MapAttribute<InjectAttribute>();
       DescriptionProvider.MapAttribute<PostConstructorAttribute>();
       DescriptionProvider.MapAttribute<PostInjectAttribute>();
-      if (GetProvider(typeof(DescriptionProvider)) == null)
+      if (GetProvider(typeof(DescriptionProvider), true) == null)
       {
         Map<DescriptionProvider>().ToValue(DescriptionProvider);
       }
@@ -55,11 +56,6 @@ namespace Injection
 
     public virtual void Inject(object value)
     {
-      if (Parent != null)
-      {
-        Parent.Inject(value);
-      }
-
       ApplyInject(value);
     }
 
@@ -95,7 +91,23 @@ namespace Injection
       }
     }
 
-    public IInjector Parent { get; set; }
+    public IInjector Parent
+    {
+      get { return _parent; }
+      set
+      {
+        if (value != _parent)
+        {
+          var current = value;
+          while (current != null)
+          {
+            if (current == this) throw new ArgumentException();
+            current = current.Parent;
+          }
+          _parent = value;
+        }
+      }
+    }
 
     public T Get<T>() where T : class
     {
@@ -104,7 +116,7 @@ namespace Injection
 
     public object Get(Type type)
     {
-      var provider = GetProvider(type);
+      var provider = GetProvider(type, true);
       if (provider != null)
       {
         return provider.Apply(this, type);
@@ -112,12 +124,12 @@ namespace Injection
       return null;
     }
 
-    public IProvider GetProvider(Type type)
+    public IProvider GetProvider(Type type, bool includeParents)
     {
       IProvider result;
-      if (!_provider.TryGetValue(type, out result) && Parent != null)
+      if (!_provider.TryGetValue(type, out result) && includeParents && Parent != null)
       {
-        result = Parent.GetProvider(type);
+        result = Parent.GetProvider(type, true);
       }
       return result;
     }
@@ -166,7 +178,7 @@ namespace Injection
           if ((kind & MemberKind.Field) == MemberKind.Field ||
               (kind & MemberKind.Property) == MemberKind.Property)
           {
-            var provider = GetProvider(member.ProviderType);
+            var provider = GetProvider(member.ProviderType, true);
             if (provider != null)
             {
               if (member.ProviderType != member.Type)

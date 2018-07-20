@@ -11,7 +11,7 @@ namespace Injection
     IInjector Parent { get; }
     T Get<T>() where T : class;
     Object Get(Type type);
-    IProvider GetProvider(Type type);
+    IProvider GetProvider(Type type, bool includeParents);
     void MapProvider<T>(IProvider provider) where T : class;
     void MapProvider(Type type, IProvider provider);
     void UnmapProvider<T>() where T : class;

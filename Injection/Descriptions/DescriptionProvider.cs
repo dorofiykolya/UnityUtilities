@@ -15,15 +15,6 @@ namespace Injection
 
     public DescriptionProvider(DescriptionProvider parent = null)
     {
-      var target = parent;
-      while (target != null)
-      {
-        if (target == this)
-        {
-          throw new ArgumentException(GetType() + ": An object cannot be added as a parent to itself or one of its panres");
-        }
-        target = target._parent;
-      }
       _parent = parent;
     }
 
