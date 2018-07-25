@@ -85,5 +85,16 @@ namespace Utils
     {
       return new Vector2(target.x, target.z);
     }
+
+    public static float ToAngle360(this Vector3 v3, Vector2 axis)
+    {
+      float ang = Vector3.Angle(v3, axis);
+      Vector3 cross = Vector3.Cross(v3, axis);
+
+      if (cross.z > 0)
+        ang = 360 - ang;
+
+      return ang;
+    }
   }
 }
