@@ -1,5 +1,7 @@
 ﻿using System;
+#if !UNITY_WEBGL
 using System.Threading;
+#endif
 
 namespace Utils
 {
@@ -15,8 +17,9 @@ namespace Utils
     public IThreadPoolResult QueueUserWorkItem(Action action)
     {
       var result = new ThreadPoolResult();
-
+#if !UNITY_WEBGL
       ThreadPool.QueueUserWorkItem(sender =>
+#endif
       {
         try
         {
@@ -35,8 +38,9 @@ namespace Utils
     public IThreadPoolResult<T> QueueUserWorkItem<T>(Func<T> action)
     {
       var result = new ThreadPoolResult<T>();
-
+#if !UNITY_WEBGL
       ThreadPool.QueueUserWorkItem(sender =>
+#endif
       {
         try
         {

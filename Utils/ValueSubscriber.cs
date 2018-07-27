@@ -14,18 +14,12 @@ namespace Utils
       _current = _prev = defaultValue;
     }
 
-    public T Current
+    public virtual T Current
     {
-      get { return _current; }
+      get { return GetValue(); }
       set
       {
-        var last = _current;
-        if (!ReferenceEquals(last, value) && (ReferenceEquals(last, null) || !last.Equals(value)))
-        {
-          _prev = last;
-          _current = value;
-          _onChange.Fire(this);
-        }
+        SetValue(value);
       }
     }
 
@@ -34,9 +28,25 @@ namespace Utils
       get { return _prev; }
     }
 
-    public void SubscribeOnChange(Lifetime lifetime, Action<ValueSubscriber<T>> listener)
+    public virtual void SubscribeOnChange(Lifetime lifetime, Action<ValueSubscriber<T>> listener)
     {
       _onChange.Subscribe(lifetime, listener);
+    }
+
+    protected virtual void SetValue(T value)
+    {
+      var last = _current;
+      if (!ReferenceEquals(last, value) && (ReferenceEquals(last, null) || !last.Equals(value)))
+      {
+        _prev = last;
+        _current = value;
+        _onChange.Fire(this);
+      }
+    }
+
+    protected virtual T GetValue()
+    {
+      return _current;
     }
   }
 }
