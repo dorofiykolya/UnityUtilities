@@ -95,6 +95,11 @@ namespace Utils
       }
     }
 
+    public Definition DefineNested(string name = "defaultName")
+    {
+      return Define(this, name);
+    }
+
     private void AddDefinition(Definition definition)
     {
       if (!_actions.Contains(definition.Terminate))
