@@ -30,7 +30,10 @@ namespace Utils
         {
           _dispatcher.Dispatch(() => result.Resolve(exception));
         }
-      });
+      }
+#if !UNITY_WEBGL
+      );
+#endif
 
       return result;
     }
@@ -51,7 +54,10 @@ namespace Utils
         {
           _dispatcher.Dispatch(() => result.Resolve(exception));
         }
-      });
+      }
+#if !UNITY_WEBGL
+      );
+#endif
 
       return result;
     }
