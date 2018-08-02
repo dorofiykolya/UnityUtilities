@@ -22,6 +22,8 @@ namespace Utils
       _instances = new List<GameObject>();
     }
 
+    public T Prefab => _prefab;
+
     public int Instances { get { return _instances.Count; } }
 
     public T Instantiate()
