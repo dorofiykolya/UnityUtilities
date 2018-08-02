@@ -33,6 +33,7 @@ namespace Utils
       }
 #if !UNITY_WEBGL
       );
+
 #endif
 
       return result;
