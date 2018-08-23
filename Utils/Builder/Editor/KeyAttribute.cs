@@ -25,6 +25,7 @@ namespace Utils.BuildPipeline
     {
       Assert.IsTrue(enumType.IsEnum, "type must be Enum");
       Required = required;
+      RequiredValue = true;
       AvailableValues = Enum.GetNames(enumType);
     }
   }

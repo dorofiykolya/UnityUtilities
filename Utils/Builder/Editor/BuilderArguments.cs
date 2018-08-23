@@ -25,7 +25,7 @@ namespace Utils.BuildPipeline
     [Key(false, Description = "Remove unused Engine code from your build (IL2CPP-only).")]
     public const string StripEngineCode = "-stripEngineCode";
 
-    [Key(false, typeof(ScriptingImplementation), RequiredValue = true, Description = "Sets the scripting framework for a BuildTargetPlatformGroup.")]
+    [Key(false, typeof(ScriptingImplementation), Description = "Sets the scripting framework for a BuildTargetPlatformGroup.")]
     public const string ScriptingBackend = "-scriptingBackend";
 
     public class Android
@@ -65,6 +65,9 @@ namespace Utils.BuildPipeline
 
       [Key(false, Description = "Create a separate APK for each CPU architecture.")]
       public const string BuildApkPerCpuArchitecture = "-buildApkPerCpuArchitecture";
+
+      [Key(false, typeof(MobileTextureSubtarget), Description = "Android platform options.")]
+      public const string AndroidBuildSubtarget = "-androidBuildSubtarget";
     }
 
     public class IOS

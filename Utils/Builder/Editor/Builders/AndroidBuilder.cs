@@ -4,14 +4,14 @@ using UnityEngine;
 
 namespace Utils.BuildPipeline.Builders
 {
-  public class AndroidBuilder : IBuilder
+  public class AndroidBuilder : DefaultBuilder
   {
     private const string KeystorePath = BuilderArguments.Android.KeystoreName;
     private const string KeystorePass = BuilderArguments.Android.KeystorePass;
     private const string KeyaliasName = BuilderArguments.Android.KeyaliasName;
     private const string KeyaliasPass = BuilderArguments.Android.KeyaliasPass;
 
-    public BuildReport Build(BuildConfiguration config, ILogger logger)
+    public override BuildReport Build(BuildConfiguration config, ILogger logger)
     {
       var args = config.Arguments;
 
@@ -30,6 +30,11 @@ namespace Utils.BuildPipeline.Builders
         PlayerSettings.Android.preferredInstallLocation = args.GetValueByEnum<AndroidPreferredInstallLocation>(BuilderArguments.Android.PreferredInstallLocation);
       }
 
+      if (args.Contains(BuilderArguments.Android.AndroidBuildSubtarget))
+      {
+        EditorUserBuildSettings.androidBuildSubtarget = args.GetValueByEnum<MobileTextureSubtarget>(BuilderArguments.Android.AndroidBuildSubtarget);
+      }
+
       PlayerSettings.Android.targetArchitectures = args.Contains(BuilderArguments.Android.TargetArchitectures)
         ? args.GetValueByEnum<AndroidArchitecture>(BuilderArguments.Android.TargetArchitectures)
         : AndroidArchitecture.ARMv7;
@@ -45,8 +50,9 @@ namespace Utils.BuildPipeline.Builders
       PlayerSettings.Android.bundleVersionCode = config.BuildNumber;
 
       EditorUserBuildSettings.androidBuildSystem = AndroidBuildSystem.Internal;
-
+      PreBuild(config, logger);
       var result = UnityEditor.BuildPipeline.BuildPlayer(config.BuildPlayerOptions);
+      PostBuild(result, logger);
 
       return result;
     }

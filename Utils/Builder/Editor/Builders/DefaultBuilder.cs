@@ -8,7 +8,20 @@ namespace Utils.BuildPipeline.Builders
   {
     public virtual BuildReport Build(BuildConfiguration config, ILogger logger)
     {
-      return UnityEditor.BuildPipeline.BuildPlayer(config.BuildPlayerOptions);
+      PreBuild(config, logger);
+      var result = UnityEditor.BuildPipeline.BuildPlayer(config.BuildPlayerOptions);
+      PostBuild(result, logger);
+      return result;
+    }
+
+    protected virtual void PreBuild(BuildConfiguration config, ILogger logger)
+    {
+
+    }
+
+    protected virtual void PostBuild(BuildReport result, ILogger logger)
+    {
+
     }
   }
 }
