@@ -62,7 +62,7 @@ namespace Utils.BuildPipeline
         }
       }
 
-      var requiredKeys = string.Join(", ", required);
+      var requiredKeys = string.Join(", ", required.ToArray());
       var message = "command line build required arguments:{0}";
 
       Assert.IsTrue(required.Count == 0, string.Format(message, requiredKeys));
@@ -104,7 +104,7 @@ namespace Utils.BuildPipeline
     {
       string value = this[key];
       T enumValue;
-      if (Enum.TryParse<T>(value, out enumValue))
+      if (BuilderUtils.TryParse<T>(value, out enumValue))
       {
         return enumValue;
       }
