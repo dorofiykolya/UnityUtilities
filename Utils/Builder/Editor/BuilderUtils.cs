@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using UnityEditor;
@@ -69,7 +70,7 @@ namespace Utils.BuildPipeline
         {
           if (attr.Required)
           {
-            string commandName = (string)info.GetValue(globalType);
+            string commandName = (string) info.GetValue(globalType);
             if (!args.Contains(commandName))
             {
               requiredArgs.Add(commandName);
@@ -81,13 +82,15 @@ namespace Utils.BuildPipeline
                 var value = args[commandName];
                 if (attr.RequiredValue && attr.AvailableValues != null && attr.AvailableValues.All(v => v != value))
                 {
-                  invalidValues.Add(invalidValues.Count + ": " + GetMessageNotValidArgs(commandName, args, attr.AvailableValues));
+                  invalidValues.Add(invalidValues.Count + ": " +
+                                    GetMessageNotValidArgs(commandName, args, attr.AvailableValues));
                 }
               }
             }
           }
         }
       }
+
       args.AssertKeys(requiredArgs.ToArray());
       Assert.IsTrue(invalidValues.Count == 0, string.Join(Environment.NewLine, invalidValues.ToArray()));
     }
@@ -99,6 +102,7 @@ namespace Utils.BuildPipeline
       {
         result += ", expected value: " + string.Join("|", expected);
       }
+
       return result;
     }
 
@@ -111,34 +115,44 @@ namespace Utils.BuildPipeline
         var attr = info.GetCustomAttributes(typeof(KeyAttribute), false).Cast<KeyAttribute>().FirstOrDefault();
         if (attr != null)
         {
-          var availableValues = attr.AvailableValues != null && attr.AvailableValues.Length != 0 ? '<' + string.Join("|", attr.AvailableValues) + '>' : "";
+          var availableValues = attr.AvailableValues != null && attr.AvailableValues.Length != 0
+            ? '<' + string.Join("|", attr.AvailableValues) + '>'
+            : "";
           var required = attr.Required ? "(required)" : "";
           var requiredValue = attr.RequiredValue ? "(required value)" : "";
           builder.Append("".PadLeft(spaces));
-          builder.AppendFormat("{0} {1} {4} -- {3} {2} ", info.GetValue(type), required, attr.Description ?? "", availableValues, requiredValue);
+          builder.AppendFormat("{0} {1} {4} -- {3} {2} ", info.GetValue(type), required, attr.Description ?? "",
+            availableValues, requiredValue);
           builder.AppendLine();
         }
       }
+
       return builder.ToString();
     }
 
-    public static bool TryGetScriptingBackend(Arguments args, BuildTargetGroup targetGroup, out ScriptingImplementation result)
+    public static bool TryGetScriptingBackend(Arguments args, BuildTargetGroup targetGroup,
+      out ScriptingImplementation result)
     {
       if (args.Contains(BuilderArguments.ScriptingBackend))
       {
         string scriptingBackendValue = args[BuilderArguments.ScriptingBackend];
         ScriptingImplementation enumValue;
-        if (TryParse(scriptingBackendValue, out enumValue) && (enumValue == ScriptingImplementation.IL2CPP || enumValue == ScriptingImplementation.Mono2x || enumValue == ScriptingImplementation.WinRTDotNET))
+        if (TryParse(scriptingBackendValue, out enumValue) &&
+            (enumValue == ScriptingImplementation.IL2CPP || enumValue == ScriptingImplementation.Mono2x ||
+             enumValue == ScriptingImplementation.WinRTDotNET))
         {
           if (enumValue == ScriptingImplementation.WinRTDotNET && targetGroup != BuildTargetGroup.WSA)
           {
-            throw new ArgumentException(string.Format("invalid '{0}' command value '{1}' by BuildTargetGroup '{2}'", BuilderArguments.ScriptingBackend, scriptingBackendValue, targetGroup.ToString()));
+            throw new ArgumentException(string.Format("invalid '{0}' command value '{1}' by BuildTargetGroup '{2}'",
+              BuilderArguments.ScriptingBackend, scriptingBackendValue, targetGroup.ToString()));
           }
+
           result = enumValue;
           return true;
         }
 
-        throw new ArgumentException(string.Format("invalid '{0}' command value:'{1}'", BuilderArguments.ScriptingBackend, scriptingBackendValue));
+        throw new ArgumentException(string.Format("invalid '{0}' command value:'{1}'",
+          BuilderArguments.ScriptingBackend, scriptingBackendValue));
       }
 
       result = ScriptingImplementation.Mono2x;
@@ -149,7 +163,7 @@ namespace Utils.BuildPipeline
     {
       try
       {
-        result = (TEnum)Enum.Parse(typeof(TEnum), value);
+        result = (TEnum) Enum.Parse(typeof(TEnum), value);
       }
       catch
       {
@@ -167,7 +181,8 @@ namespace Utils.BuildPipeline
 
     private static List<FieldInfo> GetConstants(Type type)
     {
-      FieldInfo[] fieldInfos = type.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+      FieldInfo[] fieldInfos =
+        type.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 
       return fieldInfos.Where(fi => fi.IsLiteral && !fi.IsInitOnly).ToList();
     }
@@ -182,7 +197,7 @@ namespace Utils.BuildPipeline
       public static bool TryParse(string input, out Version result)
       {
         VersionUtils.VersionResult result1 = new VersionUtils.VersionResult();
-        result1.Init(nameof(input), false);
+        result1.Init("input", false);
         bool version = VersionUtils.TryParseVersion(input, ref result1);
         result = result1.m_parsedVersion;
         return version;
@@ -195,6 +210,7 @@ namespace Utils.BuildPipeline
           result.SetFailure(VersionUtils.ParseFailureKind.ArgumentNullException);
           return false;
         }
+
         string[] strArray = version.Split(VersionUtils.SeparatorsArray);
         int length = strArray.Length;
         if (length < 2 || length > 4)
@@ -202,9 +218,11 @@ namespace Utils.BuildPipeline
           result.SetFailure(VersionUtils.ParseFailureKind.ArgumentException);
           return false;
         }
+
         int parsedComponent1;
         int parsedComponent2;
-        if (!VersionUtils.TryParseComponent(strArray[0], nameof(version), ref result, out parsedComponent1) || !VersionUtils.TryParseComponent(strArray[1], nameof(version), ref result, out parsedComponent2))
+        if (!VersionUtils.TryParseComponent(strArray[0], "version", ref result, out parsedComponent1) ||
+            !VersionUtils.TryParseComponent(strArray[1], "version", ref result, out parsedComponent2))
           return false;
         int num = length - 2;
         if (num > 0)
@@ -217,23 +235,28 @@ namespace Utils.BuildPipeline
             int parsedComponent4;
             if (!VersionUtils.TryParseComponent(strArray[3], "revision", ref result, out parsedComponent4))
               return false;
-            result.m_parsedVersion = new Version(parsedComponent1, parsedComponent2, parsedComponent3, parsedComponent4);
+            result.m_parsedVersion =
+              new Version(parsedComponent1, parsedComponent2, parsedComponent3, parsedComponent4);
           }
           else
             result.m_parsedVersion = new Version(parsedComponent1, parsedComponent2, parsedComponent3);
         }
         else
           result.m_parsedVersion = new Version(parsedComponent1, parsedComponent2);
+
         return true;
       }
 
-      private static bool TryParseComponent(string component, string componentName, ref VersionUtils.VersionResult result, out int parsedComponent)
+      private static bool TryParseComponent(string component, string componentName,
+        ref VersionUtils.VersionResult result, out int parsedComponent)
       {
-        if (!int.TryParse(component, NumberStyles.Integer, (IFormatProvider)CultureInfo.InvariantCulture, out parsedComponent))
+        if (!int.TryParse(component, NumberStyles.Integer, (IFormatProvider) CultureInfo.InvariantCulture,
+          out parsedComponent))
         {
           result.SetFailure(VersionUtils.ParseFailureKind.FormatException, component);
           return false;
         }
+
         if (parsedComponent >= 0)
           return true;
         result.SetFailure(VersionUtils.ParseFailureKind.ArgumentOutOfRangeException, componentName);
@@ -247,6 +270,7 @@ namespace Utils.BuildPipeline
         ArgumentOutOfRangeException,
         FormatException,
       }
+
       internal struct VersionResult
       {
         internal Version m_parsedVersion;
@@ -279,27 +303,29 @@ namespace Utils.BuildPipeline
           switch (this.m_failure)
           {
             case VersionUtils.ParseFailureKind.ArgumentNullException:
-              return (Exception)new ArgumentNullException(this.m_argumentName);
+              return (Exception) new ArgumentNullException(this.m_argumentName);
             case VersionUtils.ParseFailureKind.ArgumentException:
-              return (Exception)new ArgumentException("Arg_VersionString");
+              return (Exception) new ArgumentException("Arg_VersionString");
             case VersionUtils.ParseFailureKind.ArgumentOutOfRangeException:
-              return (Exception)new ArgumentOutOfRangeException(this.m_exceptionArgument, "ArgumentOutOfRange_Version");
+              return (Exception) new ArgumentOutOfRangeException(this.m_exceptionArgument,
+                "ArgumentOutOfRange_Version");
             case VersionUtils.ParseFailureKind.FormatException:
               try
               {
-                int.Parse(this.m_exceptionArgument, (IFormatProvider)CultureInfo.InvariantCulture);
+                int.Parse(this.m_exceptionArgument, (IFormatProvider) CultureInfo.InvariantCulture);
               }
               catch (FormatException ex)
               {
-                return (Exception)ex;
+                return (Exception) ex;
               }
               catch (OverflowException ex)
               {
-                return (Exception)ex;
+                return (Exception) ex;
               }
-              return (Exception)new FormatException("Format_InvalidString");
+
+              return (Exception) new FormatException("Format_InvalidString");
             default:
-              return (Exception)new ArgumentException("Arg_VersionString");
+              return (Exception) new ArgumentException("Arg_VersionString");
           }
         }
       }
