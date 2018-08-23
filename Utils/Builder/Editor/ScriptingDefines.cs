@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -32,7 +33,7 @@ namespace Utils.BuildPipeline
         if (_verbose)
         {
           Debug.Log("Add scripting define: " + define);
-          Debug.Log("Defines: " + string.Join(";", defines));
+          Debug.Log("Defines: " + string.Join(";", defines.ToArray()));
         }
         Apply(defines);
       }
@@ -49,7 +50,7 @@ namespace Utils.BuildPipeline
         if (_verbose)
         {
           Debug.Log("Remove scripting define: " + define);
-          Debug.Log("Defines: " + string.Join(";", defines));
+          Debug.Log("Defines: " + string.Join(";", defines.ToArray()));
         }
         Apply(defines);
       }
@@ -79,7 +80,7 @@ namespace Utils.BuildPipeline
 
     private void Apply(HashSet<string> defines)
     {
-      PlayerSettings.SetScriptingDefineSymbolsForGroup(_targetGroup, string.Join(";", defines));
+      PlayerSettings.SetScriptingDefineSymbolsForGroup(_targetGroup, string.Join(";", defines.ToArray()));
     }
   }
 }

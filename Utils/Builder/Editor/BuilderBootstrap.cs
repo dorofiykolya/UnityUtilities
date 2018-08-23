@@ -65,7 +65,7 @@ namespace Utils.BuildPipeline
     public Builder Create()
     {
       IBuildersProvider provider = null;
-      if (_defaultBuilderProvider)
+      if (_defaultBuilderProvider || _mapBuilders.Count == 0)
       {
         provider = new DefaultBuildersProvider();
       }

@@ -48,10 +48,11 @@ namespace Utils.BuildPipeline
         _logger.Log("command line arguments: " + Environment.NewLine + args.ToString("\t{0}={1};" + Environment.NewLine));
       }
 
-      var buildTarget = (BuildTarget)Enum.Parse(typeof(BuildTarget), args[BuilderArguments.BuildTarget]);
+      BuildTarget buildTarget;
+      Assert.IsTrue(BuilderUtils.TryParse(args[BuilderArguments.BuildTarget], out buildTarget), BuilderUtils.GetMessageNotValidArgs(BuilderArguments.BuildTarget, args));
 
       Version version;
-      Assert.IsTrue(Version.TryParse(args[BuilderArguments.BuildVersion], out version), BuilderUtils.GetMessageNotValidArgs(BuilderArguments.BuildVersion, args));
+      Assert.IsTrue(BuilderUtils.TryParse(args[BuilderArguments.BuildVersion], out version), BuilderUtils.GetMessageNotValidArgs(BuilderArguments.BuildVersion, args));
 
       int buildNumber;
       Assert.IsTrue(int.TryParse(args[BuilderArguments.BuildNumber], NumberStyles.Any, NumberFormatInfo.InvariantInfo, out buildNumber), BuilderUtils.GetMessageNotValidArgs(BuilderArguments.BuildNumber, args));

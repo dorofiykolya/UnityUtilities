@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -127,7 +128,7 @@ namespace Utils.BuildPipeline
       {
         string scriptingBackendValue = args[BuilderArguments.ScriptingBackend];
         ScriptingImplementation enumValue;
-        if (Enum.TryParse(scriptingBackendValue, out enumValue) && (enumValue == ScriptingImplementation.IL2CPP || enumValue == ScriptingImplementation.Mono2x || enumValue == ScriptingImplementation.WinRTDotNET))
+        if (TryParse(scriptingBackendValue, out enumValue) && (enumValue == ScriptingImplementation.IL2CPP || enumValue == ScriptingImplementation.Mono2x || enumValue == ScriptingImplementation.WinRTDotNET))
         {
           if (enumValue == ScriptingImplementation.WinRTDotNET && targetGroup != BuildTargetGroup.WSA)
           {
@@ -144,11 +145,164 @@ namespace Utils.BuildPipeline
       return false;
     }
 
+    public static bool TryParse<TEnum>(string value, out TEnum result) where TEnum : struct
+    {
+      try
+      {
+        result = (TEnum)Enum.Parse(typeof(TEnum), value);
+      }
+      catch
+      {
+        result = default(TEnum);
+        return false;
+      }
+
+      return true;
+    }
+
+    public static bool TryParse(string input, out Version result)
+    {
+      return VersionUtils.TryParse(input, out result);
+    }
+
     private static List<FieldInfo> GetConstants(Type type)
     {
       FieldInfo[] fieldInfos = type.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 
       return fieldInfos.Where(fi => fi.IsLiteral && !fi.IsInitOnly).ToList();
+    }
+
+    public class VersionUtils
+    {
+      private static readonly char[] SeparatorsArray = new char[1]
+      {
+        '.'
+      };
+
+      public static bool TryParse(string input, out Version result)
+      {
+        VersionUtils.VersionResult result1 = new VersionUtils.VersionResult();
+        result1.Init(nameof(input), false);
+        bool version = VersionUtils.TryParseVersion(input, ref result1);
+        result = result1.m_parsedVersion;
+        return version;
+      }
+
+      private static bool TryParseVersion(string version, ref VersionUtils.VersionResult result)
+      {
+        if (version == null)
+        {
+          result.SetFailure(VersionUtils.ParseFailureKind.ArgumentNullException);
+          return false;
+        }
+        string[] strArray = version.Split(VersionUtils.SeparatorsArray);
+        int length = strArray.Length;
+        if (length < 2 || length > 4)
+        {
+          result.SetFailure(VersionUtils.ParseFailureKind.ArgumentException);
+          return false;
+        }
+        int parsedComponent1;
+        int parsedComponent2;
+        if (!VersionUtils.TryParseComponent(strArray[0], nameof(version), ref result, out parsedComponent1) || !VersionUtils.TryParseComponent(strArray[1], nameof(version), ref result, out parsedComponent2))
+          return false;
+        int num = length - 2;
+        if (num > 0)
+        {
+          int parsedComponent3;
+          if (!VersionUtils.TryParseComponent(strArray[2], "build", ref result, out parsedComponent3))
+            return false;
+          if (num - 1 > 0)
+          {
+            int parsedComponent4;
+            if (!VersionUtils.TryParseComponent(strArray[3], "revision", ref result, out parsedComponent4))
+              return false;
+            result.m_parsedVersion = new Version(parsedComponent1, parsedComponent2, parsedComponent3, parsedComponent4);
+          }
+          else
+            result.m_parsedVersion = new Version(parsedComponent1, parsedComponent2, parsedComponent3);
+        }
+        else
+          result.m_parsedVersion = new Version(parsedComponent1, parsedComponent2);
+        return true;
+      }
+
+      private static bool TryParseComponent(string component, string componentName, ref VersionUtils.VersionResult result, out int parsedComponent)
+      {
+        if (!int.TryParse(component, NumberStyles.Integer, (IFormatProvider)CultureInfo.InvariantCulture, out parsedComponent))
+        {
+          result.SetFailure(VersionUtils.ParseFailureKind.FormatException, component);
+          return false;
+        }
+        if (parsedComponent >= 0)
+          return true;
+        result.SetFailure(VersionUtils.ParseFailureKind.ArgumentOutOfRangeException, componentName);
+        return false;
+      }
+
+      internal enum ParseFailureKind
+      {
+        ArgumentNullException,
+        ArgumentException,
+        ArgumentOutOfRangeException,
+        FormatException,
+      }
+      internal struct VersionResult
+      {
+        internal Version m_parsedVersion;
+        internal VersionUtils.ParseFailureKind m_failure;
+        internal string m_exceptionArgument;
+        internal string m_argumentName;
+        internal bool m_canThrow;
+
+        internal void Init(string argumentName, bool canThrow)
+        {
+          this.m_canThrow = canThrow;
+          this.m_argumentName = argumentName;
+        }
+
+        internal void SetFailure(VersionUtils.ParseFailureKind failure)
+        {
+          this.SetFailure(failure, string.Empty);
+        }
+
+        internal void SetFailure(VersionUtils.ParseFailureKind failure, string argument)
+        {
+          this.m_failure = failure;
+          this.m_exceptionArgument = argument;
+          if (this.m_canThrow)
+            throw this.GetVersionParseException();
+        }
+
+        internal Exception GetVersionParseException()
+        {
+          switch (this.m_failure)
+          {
+            case VersionUtils.ParseFailureKind.ArgumentNullException:
+              return (Exception)new ArgumentNullException(this.m_argumentName);
+            case VersionUtils.ParseFailureKind.ArgumentException:
+              return (Exception)new ArgumentException("Arg_VersionString");
+            case VersionUtils.ParseFailureKind.ArgumentOutOfRangeException:
+              return (Exception)new ArgumentOutOfRangeException(this.m_exceptionArgument, "ArgumentOutOfRange_Version");
+            case VersionUtils.ParseFailureKind.FormatException:
+              try
+              {
+                int.Parse(this.m_exceptionArgument, (IFormatProvider)CultureInfo.InvariantCulture);
+              }
+              catch (FormatException ex)
+              {
+                return (Exception)ex;
+              }
+              catch (OverflowException ex)
+              {
+                return (Exception)ex;
+              }
+              return (Exception)new FormatException("Format_InvalidString");
+            default:
+              return (Exception)new ArgumentException("Arg_VersionString");
+          }
+        }
+      }
     }
   }
 }
