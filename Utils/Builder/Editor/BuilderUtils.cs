@@ -78,7 +78,7 @@ namespace Utils.BuildPipeline
               if (strict)
               {
                 var value = args[commandName];
-                if (attr.AvailableValues.All(v => v != value))
+                if (attr.RequiredValue && attr.AvailableValues != null && attr.AvailableValues.All(v => v != value))
                 {
                   invalidValues.Add(invalidValues.Count + ": " + GetMessageNotValidArgs(commandName, args, attr.AvailableValues));
                 }
