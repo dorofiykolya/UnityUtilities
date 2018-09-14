@@ -3,29 +3,11 @@ using System.Collections.Generic;
 
 namespace Utils.Persistences
 {
-  public class Persistence<T> : Persistence where T : Persistence
+  public abstract class Persistence<T> : Persistence where T : Persistence, new()
   {
-    private readonly Func<T> _factory;
-
-    public Persistence(Func<T> factory) : this(factory, new PlayerPrefsPersistanceProvider())
+    protected Persistence()
     {
 
-    }
-
-    public Persistence(Func<T> factory, IPersistanceProvider persistanceProvider) : this(string.Empty, factory, persistanceProvider)
-    {
-
-    }
-
-    public Persistence(string key, Func<T> factory, IPersistanceProvider persistanceProvider) : this(key, factory, persistanceProvider, null)
-    {
-
-    }
-
-    public Persistence(string key, Func<T> factory, IPersistanceProvider persistanceProvider, Persistence<T> parent)
-    {
-      _factory = factory;
-      Initialize(this, key, persistanceProvider, parent);
     }
 
     public new T this[string key]
@@ -35,8 +17,8 @@ namespace Utils.Persistences
         T result = (T)GetPersistance(key);
         if (result == null)
         {
-          result = _factory();
-          Initialize(_factory(), key, Provider, this);
+          result = new T();
+          Initialize(result, key, Provider, this);
           SetPersistance(key, result);
         }
 
