@@ -29,6 +29,7 @@ namespace Utils.Persistences
 
   public class Persistence
   {
+    public static readonly Type[] AvailableTypes = { typeof(int), typeof(string), typeof(float), typeof(long), typeof(bool) };
     public static string ConcatPath(string fullPath, string key)
     {
       return fullPath + '/' + key;
@@ -50,6 +51,11 @@ namespace Utils.Persistences
     public Persistence()
     {
 
+    }
+
+    public Persistence(IPersistanceProvider persistanceProvider)
+    {
+      Initialize(this, null, persistanceProvider, null);
     }
 
     protected static Persistence Initialize(Persistence persistence, string key, IPersistanceProvider persistanceProvider, Persistence parent)

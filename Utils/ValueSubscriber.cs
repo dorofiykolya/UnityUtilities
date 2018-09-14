@@ -4,6 +4,12 @@ namespace Utils
 {
   public class ValueSubscriber<T> where T : IEquatable<T>
   {
+    public static implicit operator T(ValueSubscriber<T> value)
+    {
+      return value.Current;
+    }
+
+
     private readonly Signal<ValueSubscriber<T>> _onChange;
     private T _current;
     private T _prev;
