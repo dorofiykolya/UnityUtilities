@@ -38,11 +38,25 @@ namespace Utils.Collections
     public T Peek()
     {
       if (_items.First == null)
+      {
         throw new InvalidOperationException("queue is empty");
+      }
 
       var item = _items.First.Value;
 
       return item;
+    }
+
+    public T Last
+    {
+      get
+      {
+        if (_items.Last == null)
+        {
+          throw new InvalidOperationException("queue is empty");
+        }
+        return _items.Last.Value;
+      }
     }
 
     public bool Remove(T item)
