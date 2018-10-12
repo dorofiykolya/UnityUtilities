@@ -31,7 +31,12 @@ namespace Utils.Editor
 
       var rightPadding = EditorPrefs.GetFloat(PreferenceKeyRightPadding, 0f);
       selectionRect.xMin += selectionRect.width - 16f - rightPadding;
-      instance.SetActive(GUI.Toggle(selectionRect, instance.activeSelf, GUIContent.none));
+
+      if (instance.activeSelf != GUI.Toggle(selectionRect, instance.activeSelf, GUIContent.none))
+      {
+        Undo.RecordObject(instance, "SetActive");
+        instance.SetActive(!instance.activeSelf);
+      }
     }
   }
 }
