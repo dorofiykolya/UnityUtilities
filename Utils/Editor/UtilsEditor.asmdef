@@ -1,10 +1,16 @@
 {
     "name": "UtilsEditor",
-    "references": [],
+    "references": [
+        "Utilities"
+    ],
     "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor"
     ],
     "excludePlatforms": [],
-    "allowUnsafeCode": false
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
 }
