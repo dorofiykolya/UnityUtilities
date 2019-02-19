@@ -79,9 +79,13 @@ namespace Utils
 
     public void AddAction(Action action)
     {
+      if (_terminated)
+      {
+        throw new ArgumentException("Lifetime was terminated");
+      }
       if (_actions.Contains(action))
       {
-        throw new ArgumentException();
+        throw new ArgumentException("Action already exist");
       }
       _actions.Add(action);
     }
