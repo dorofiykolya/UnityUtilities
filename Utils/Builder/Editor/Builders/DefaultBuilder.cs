@@ -14,6 +14,11 @@ namespace Utils.BuildPipeline.Builders
       return result;
     }
 
+    public virtual string Help
+    {
+      get { return ""; }
+    }
+
     protected virtual void PreBuild(BuildConfiguration config, ILogger logger)
     {
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEditor;
@@ -12,14 +13,16 @@ namespace Utils.BuildPipeline
   public class Builder
   {
     private readonly IBuildersProvider _provider;
-    private readonly IBuilderProcessor[] _processors;
+    private readonly BuilderProcessorsProvider _processors;
     private readonly ILogger _logger;
     private readonly string[] _scenes;
+    private readonly string _additionalHelp;
 
-    public Builder(IBuildersProvider provider, string[] scenes = null, ILogger logger = null, IBuilderProcessor[] processors = null)
+    public Builder(IBuildersProvider provider, string[] scenes = null, ILogger logger = null, BuilderProcessorsProvider processors = null, string additionalHelp = null)
     {
       _provider = provider;
-      _processors = processors;
+      _processors = processors ?? new BuilderProcessorsProvider();
+      _additionalHelp = additionalHelp;
       _scenes = scenes ?? ScenePaths;
       _logger = logger ?? Debug.unityLogger;
     }
@@ -110,7 +113,7 @@ namespace Utils.BuildPipeline
       OnPreBuild(configuration);
       var target = _provider.Get(configuration.Target);
       var report = target.Build(configuration, _logger);
-      OnPostBuild(report);
+      OnPostBuild(configuration, report);
       return report;
     }
 
@@ -124,17 +127,35 @@ namespace Utils.BuildPipeline
         builder.Append(BuilderUtils.GetArgumentsDescription(typeof(BuilderArguments), 4));
         builder.Append(Environment.NewLine);
 
-        builder.Append("    Android" + Environment.NewLine + BuilderUtils.GetArgumentsDescription(typeof(BuilderArguments.Android), 8));
-        builder.Append(Environment.NewLine);
+        foreach (var buildTarget in _provider.AvailableTargets)
+        {
+          builder.AppendLine(BuilderUtils.PadLeftLines(_provider.Get(buildTarget).Help, 8));
+        }
 
-        builder.Append("    IOS" + Environment.NewLine + BuilderUtils.GetArgumentsDescription(typeof(BuilderArguments.IOS), 8));
-        builder.Append(Environment.NewLine);
+        if (!string.IsNullOrEmpty(_additionalHelp))
+        {
+          builder.AppendLine();
+          builder.Append("".PadLeft(4));
+          builder.AppendLine("AdditionalInfo:");
+          builder.AppendLine(BuilderUtils.PadLeftLines(_additionalHelp, 8));
+        }
 
-        builder.Append("    WebGL" + Environment.NewLine + BuilderUtils.GetArgumentsDescription(typeof(BuilderArguments.WebGL), 8));
-        builder.Append(Environment.NewLine);
-
-        builder.Append("    Standalone" + Environment.NewLine + BuilderUtils.GetArgumentsDescription(typeof(BuilderArguments.Standalone), 8));
-        builder.Append(Environment.NewLine);
+        if (_processors != null)
+        {
+          foreach (var processor in _processors.Processors)
+          {
+            if (!string.IsNullOrEmpty(processor.Help))
+            {
+              builder.Append("".PadLeft(4));
+              builder.Append(processor.GetType().Name);
+              builder.Append("   (");
+              builder.Append(processor.GetType().FullName);
+              builder.AppendLine(")");
+              builder.AppendLine(BuilderUtils.PadLeftLines(processor.Help, 8));
+              builder.AppendLine();
+            }
+          }
+        }
 
         return builder.ToString();
       }
@@ -152,20 +173,20 @@ namespace Utils.BuildPipeline
     {
       if (_processors != null)
       {
-        foreach (var processor in _processors)
+        foreach (var processor in _processors.Get(configuration.Target))
         {
           processor.OnPreBuild(configuration);
         }
       }
     }
 
-    private void OnPostBuild(BuildReport report)
+    private void OnPostBuild(BuildConfiguration configuration, BuildReport report)
     {
       if (_processors != null)
       {
-        foreach (var processor in _processors)
+        foreach (var processor in _processors.Get(configuration.Target))
         {
-          processor.OnPostBuild(report);
+          processor.OnPostBuild(configuration, report);
         }
       }
     }

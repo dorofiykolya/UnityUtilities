@@ -6,5 +6,6 @@ namespace Utils.BuildPipeline.Builders
   public interface IBuilder
   {
     BuildReport Build(BuildConfiguration config, ILogger logger);
+    string Help { get; }
   }
 }

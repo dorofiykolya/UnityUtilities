@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using Utils.BuildPipeline.Builders;
 
@@ -7,6 +8,7 @@ namespace Utils.BuildPipeline
   public interface IBuildersProvider
   {
     IBuilder Get(BuildTarget target);
+    BuildTarget[] AvailableTargets { get; }
   }
 
   public class DefaultBuildersProvider : IBuildersProvider
@@ -20,6 +22,11 @@ namespace Utils.BuildPipeline
       { BuildTarget.iOS, new IOSBuilder() },
       { BuildTarget.WSAPlayer, new DefaultBuilder() },
     };
+
+    public BuildTarget[] AvailableTargets
+    {
+      get { return Builders.Keys.ToArray(); }
+    }
 
     public IBuilder Get(BuildTarget target)
     {

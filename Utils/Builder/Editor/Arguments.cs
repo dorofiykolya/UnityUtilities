@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using UnityEngine.Assertions;
 
@@ -7,6 +9,8 @@ namespace Utils.BuildPipeline
 {
   public class Arguments
   {
+    public delegate void ExistKey(string key, string value);
+
     private readonly Dictionary<string, string> _map;
     private readonly string _verboseKey;
 
@@ -42,6 +46,44 @@ namespace Utils.BuildPipeline
       return _map.ContainsKey(key);
     }
 
+    public void OnExist(string key, ExistKey callback)
+    {
+      if (Contains(key))
+      {
+        callback(key, this[key]);
+      }
+    }
+
+    public void SetStaticPropertiesFromFiels<T>(object fromObjectFields, bool checkContainsArgs = true) where T : class
+    {
+      Assert.IsNotNull(fromObjectFields);
+      var valueType = fromObjectFields.GetType();
+
+      Assert.IsTrue(valueType.IsClass);
+      Assert.IsFalse(valueType.IsPrimitive);
+      Assert.IsFalse(valueType.IsValueType);
+      Assert.IsTrue(valueType != typeof(string));
+
+      var staticType = typeof(T);
+      Assert.IsTrue(staticType.IsClass);
+      Assert.IsFalse(staticType.IsPrimitive);
+      Assert.IsFalse(staticType.IsValueType);
+
+      var fields = valueType.GetFields(BindingFlags.Instance | BindingFlags.GetField | BindingFlags.Public).ToDictionary(f => f.Name);
+
+      var properties = staticType.GetProperties(BindingFlags.Static | BindingFlags.SetProperty | BindingFlags.Public);
+      foreach (var propertyInfo in properties)
+      {
+        if (!checkContainsArgs || Contains(propertyInfo.Name))
+        {
+          if (fields.ContainsKey(propertyInfo.Name))
+          {
+            propertyInfo.SetValue(staticType, fields[propertyInfo.Name].GetValue(fromObjectFields), null);
+          }
+        }
+      }
+    }
+
     public void AssertKey(string key, string message = null)
     {
       if (message == null)
@@ -66,6 +108,66 @@ namespace Utils.BuildPipeline
       var message = "command line build required arguments:{0}";
 
       Assert.IsTrue(required.Count == 0, string.Format(message, requiredKeys));
+    }
+
+    public bool GetAsBool(string key)
+    {
+      bool boolResult = true;
+      var boolValue = this[key];
+      if (!string.IsNullOrEmpty(boolValue))
+      {
+        boolValue = boolValue.Trim();
+        if (boolValue.Length != 0)
+        {
+          if (boolValue.ToLower() == "false") boolResult = false;
+          if (boolValue.ToLower() == "0") boolResult = false;
+          if (boolValue.ToLower() == "null") boolResult = false;
+          if (boolValue.ToLower() == "no") boolResult = false;
+          if (boolValue.ToLower() == "none") boolResult = false;
+        }
+      }
+
+      return boolResult;
+    }
+
+    public T Fill<T>() where T : new()
+    {
+      var args = this;
+      var type = typeof(T);
+      var result = new T();
+      var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetField | BindingFlags.SetField);
+      foreach (var field in fields)
+      {
+        if (args.Contains(field.Name))
+        {
+          if (field.FieldType.IsPrimitive)
+          {
+            if (field.FieldType == typeof(bool))
+            {
+              bool boolResult = GetAsBool(field.Name);
+              field.SetValue(result, boolResult);
+            }
+            else
+            {
+              field.SetValue(result, Convert.ChangeType(args[field.Name], field.FieldType));
+            }
+          }
+          else if (field.FieldType == typeof(string))
+          {
+            field.SetValue(result, args[field.Name]);
+          }
+          else if (field.FieldType.IsEnum)
+          {
+            object enumValue = Enum.Parse(field.FieldType, args[field.Name]);
+            field.SetValue(result, enumValue);
+          }
+          else
+          {
+            throw new ArgumentException(string.Format("type {0} not supported", field.FieldType));
+          }
+        }
+      }
+      return result;
     }
 
     public override string ToString()

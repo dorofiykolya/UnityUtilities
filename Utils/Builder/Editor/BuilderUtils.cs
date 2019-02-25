@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -13,7 +14,7 @@ namespace Utils.BuildPipeline
 {
   public class BuilderUtils
   {
-    private const char CommandStartCharacter = '-';
+    private const string CommandStartCharacter = "-";
 
     public static Arguments GetCommandLineArguments(string[] args)
     {
@@ -121,7 +122,7 @@ namespace Utils.BuildPipeline
           var required = attr.Required ? "(required)" : "";
           var requiredValue = attr.RequiredValue ? "(required value)" : "";
           builder.Append("".PadLeft(spaces));
-          builder.AppendFormat("{0} {1} {4} -- {3} {2} ", info.GetValue(type), required, attr.Description ?? "",
+          builder.AppendFormat(CommandStartCharacter + "{0} {1} {4} -- {3} {2} ", info.GetValue(type), required, attr.Description ?? "",
             availableValues, requiredValue);
           builder.AppendLine();
         }
@@ -159,6 +160,26 @@ namespace Utils.BuildPipeline
       return false;
     }
 
+    public static string PadLeftLines(string message, int spaces)
+    {
+      var builder = new StringBuilder();
+      var reader = new StringReader(message);
+      string line;
+      bool first = true;
+      while ((line = reader.ReadLine()) != null)
+      {
+        if (!first)
+        {
+          builder.AppendLine();
+        }
+        first = false;
+        builder.Append("".PadLeft(spaces));
+        builder.Append(line);
+      }
+
+      return builder.ToString();
+    }
+
     public static bool TryParse<TEnum>(string value, out TEnum result) where TEnum : struct
     {
       try
@@ -174,6 +195,21 @@ namespace Utils.BuildPipeline
       return true;
     }
 
+    public static bool TryParse(Type enumType, string value, out object result)
+    {
+      try
+      {
+        result = Enum.Parse(enumType, value);
+      }
+      catch
+      {
+        result = 0;
+        return false;
+      }
+
+      return true;
+    }
+
     public static bool TryParse(string input, out Version result)
     {
       return VersionUtils.TryParse(input, out result);
@@ -182,7 +218,7 @@ namespace Utils.BuildPipeline
     private static List<FieldInfo> GetConstants(Type type)
     {
       FieldInfo[] fieldInfos =
-        type.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+        type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 
       return fieldInfos.Where(fi => fi.IsLiteral && !fi.IsInitOnly).ToList();
     }
