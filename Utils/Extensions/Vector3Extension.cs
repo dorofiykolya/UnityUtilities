@@ -81,6 +81,66 @@ namespace Utils
       return target;
     }
 
+    public static Vector3 xyz(this Vector3 target)
+    {
+      return new Vector3(target.x, target.y, target.z);
+    }
+
+    public static Vector3 xzy(this Vector3 target)
+    {
+      return new Vector3(target.x, target.z, target.y);
+    }
+
+    public static Vector3 zxy(this Vector3 target)
+    {
+      return new Vector3(target.z, target.x, target.y);
+    }
+
+    public static Vector3 zyx(this Vector3 target)
+    {
+      return new Vector3(target.z, target.y, target.x);
+    }
+
+    public static Vector3 yxz(this Vector3 target)
+    {
+      return new Vector3(target.y, target.x, target.z);
+    }
+
+    public static Vector3 yzx(this Vector3 target)
+    {
+      return new Vector3(target.y, target.z, target.x);
+    }
+
+    public static Vector2 xy(this Vector3 target)
+    {
+      return new Vector2(target.x, target.y);
+    }
+
+    public static Vector2 xz(this Vector3 target)
+    {
+      return new Vector2(target.x, target.z);
+    }
+
+    public static Vector2 yx(this Vector3 target)
+    {
+      return new Vector2(target.y, target.x);
+    }
+
+    public static Vector2 yz(this Vector3 target)
+    {
+      return new Vector2(target.y, target.z);
+    }
+
+    public static Vector2 zx(this Vector3 target)
+    {
+      return new Vector2(target.z, target.x);
+    }
+
+    public static Vector2 zy(this Vector3 target)
+    {
+      return new Vector2(target.z, target.y);
+    }
+
     public static Vector2 ToVector2FromXZ(this Vector3 target)
     {
       return new Vector2(target.x, target.z);
