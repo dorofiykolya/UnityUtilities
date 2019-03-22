@@ -73,7 +73,7 @@ namespace Utils.BuildPipeline.Builders
       PlayerSettings.Android.useAPKExpansionFiles = args.GetAsBool(BuilderArguments.Android.UseAPKExpansionFiles);
       PlayerSettings.Android.bundleVersionCode = config.BuildNumber;
       
-      EditorUserBuildSettings.androidBuildSystem = AndroidBuildSystem.Internal;
+      EditorUserBuildSettings.androidBuildSystem = AndroidBuildSystem.Gradle;
       PreBuild(config, logger);
       var result = UnityEditor.BuildPipeline.BuildPlayer(config.BuildPlayerOptions);
       PostBuild(result, logger);
