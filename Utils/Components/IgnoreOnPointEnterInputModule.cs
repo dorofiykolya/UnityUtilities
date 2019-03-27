@@ -1,9 +1,9 @@
 ﻿using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Game.Components
+namespace Utils.Components
 {
-  public class GameInputModule : StandaloneInputModule
+  public class IgnoreOnPointEnterInputModule : StandaloneInputModule
   {
     public override bool IsPointerOverGameObject(int pointerId)
     {
