@@ -46,7 +46,6 @@ namespace Utils.Persistences
     private float? _floatCache;
     private string _stringCache;
     private bool _stringHasCache;
-    private object _defaultValue;
 
     public Persistence()
     {
@@ -122,74 +121,70 @@ namespace Utils.Persistences
       get { return _key; }
     }
 
-    public object DefaultValue
+    public void SetDefaultValue(object value)
     {
-      get { return _defaultValue; }
-      set
+      if (value is int)
       {
-        if (value is int)
+        if (!_persistanceProvider.HasKey(_fullPath))
         {
-          if (!_persistanceProvider.HasKey(_fullPath))
-          {
-            _intCache = (int)value;
-          }
-          else
-          {
-            _intCache = _persistanceProvider.GetInt(_fullPath);
-          }
-        }
-        else if (value is bool)
-        {
-          if (!_persistanceProvider.HasKey(_fullPath))
-          {
-            _intCache = ((bool)value ? 1 : 0);
-          }
-          else
-          {
-            _intCache = _persistanceProvider.GetInt(_fullPath);
-          }
-        }
-        else if (value is float)
-        {
-          if (!_persistanceProvider.HasKey(_fullPath))
-          {
-            _floatCache = (float)value;
-          }
-          else
-          {
-            _floatCache = _persistanceProvider.GetFloat(_fullPath);
-          }
-        }
-        else if (value is string)
-        {
-          if (!_persistanceProvider.HasKey(_fullPath))
-          {
-            _stringCache = (string)value;
-            _stringHasCache = true;
-          }
-          else
-          {
-            _stringHasCache = true;
-            _stringCache = _persistanceProvider.GetString(_fullPath);
-          }
-        }
-        else if (value is long)
-        {
-          if (!_persistanceProvider.HasKey(GetRightLongPath(_fullPath)))
-          {
-            _longCache = (long)value;
-          }
-          else
-          {
-            int right = _persistanceProvider.GetInt(GetRightLongPath(_fullPath));
-            int left = _persistanceProvider.GetInt(GetLeftLongPath(_fullPath));
-            _longCache = CombineToLong(left, right);
-          }
+          _intCache = (int)value;
         }
         else
         {
-          throw new ArgumentException("type not supported: " + (value != null ? value.GetType().FullName : "null"));
+          _intCache = _persistanceProvider.GetInt(_fullPath);
         }
+      }
+      else if (value is bool)
+      {
+        if (!_persistanceProvider.HasKey(_fullPath))
+        {
+          _intCache = ((bool)value ? 1 : 0);
+        }
+        else
+        {
+          _intCache = _persistanceProvider.GetInt(_fullPath);
+        }
+      }
+      else if (value is float)
+      {
+        if (!_persistanceProvider.HasKey(_fullPath))
+        {
+          _floatCache = (float)value;
+        }
+        else
+        {
+          _floatCache = _persistanceProvider.GetFloat(_fullPath);
+        }
+      }
+      else if (value is string)
+      {
+        if (!_persistanceProvider.HasKey(_fullPath))
+        {
+          _stringCache = (string)value;
+          _stringHasCache = true;
+        }
+        else
+        {
+          _stringHasCache = true;
+          _stringCache = _persistanceProvider.GetString(_fullPath);
+        }
+      }
+      else if (value is long)
+      {
+        if (!_persistanceProvider.HasKey(GetRightLongPath(_fullPath)))
+        {
+          _longCache = (long)value;
+        }
+        else
+        {
+          int right = _persistanceProvider.GetInt(GetRightLongPath(_fullPath));
+          int left = _persistanceProvider.GetInt(GetLeftLongPath(_fullPath));
+          _longCache = CombineToLong(left, right);
+        }
+      }
+      else
+      {
+        throw new ArgumentException("type not supported: " + (value != null ? value.GetType().FullName : "null"));
       }
     }
 

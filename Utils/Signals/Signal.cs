@@ -88,8 +88,9 @@ namespace Utils
 #if UNITY_EDITOR
           Debug.LogError(ex.StackTrace);
           throw ex;
-#endif
+#else
           Debug.LogError("Error firing, exception: " + ex);
+#endif
         }
       }
 
@@ -180,8 +181,9 @@ namespace Utils
 #if UNITY_EDITOR
           Debug.LogError(ex.StackTrace);
           throw ex;
-#endif
+#else
           Debug.LogError("Error firing, exception: " + ex);
+#endif
         }
       }
       ListPool.Push(copy);
@@ -270,8 +272,9 @@ namespace Utils
         {
 #if UNITY_EDITOR
           throw ex;
-#endif
+#else
           Debug.LogError("Error firing, exception: " + ex);
+#endif
         }
       }
       ListPool.Push(copy);

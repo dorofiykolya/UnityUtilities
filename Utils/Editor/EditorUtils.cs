@@ -15,6 +15,23 @@ namespace Utils.Editor
 
     private static readonly Stack<ColorInfo> _colorsStack = new Stack<ColorInfo>();
     private static readonly Stack<bool> _enableStack = new Stack<bool>();
+    private static readonly Stack<int> _indentLevelStack = new Stack<int>();
+
+    public static void PushIndentLevel()
+    {
+      _indentLevelStack.Push(EditorGUI.indentLevel);
+    }
+
+    public static void PushIndentLevel(int newIndentLevel)
+    {
+      _indentLevelStack.Push(EditorGUI.indentLevel);
+      EditorGUI.indentLevel = newIndentLevel;
+    }
+
+    public static void PopIndentLevel()
+    {
+      if (_indentLevelStack.Count != 0) EditorGUI.indentLevel = _indentLevelStack.Pop();
+    }
 
     public static void PushEnable()
     {

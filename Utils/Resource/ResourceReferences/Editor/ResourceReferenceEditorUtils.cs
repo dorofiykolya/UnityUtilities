@@ -83,7 +83,7 @@ namespace References.Editor
       }
       catch (Exception e)
       {
-
+        Debug.LogException(e);
       }
 
       return typeof(Object);

@@ -15,7 +15,7 @@ namespace Utils
       var type = typeof(T);
       if (Array.IndexOf(Persistence.AvailableTypes, type) != -1)
       {
-        persistence.DefaultValue = defaultValue;
+        persistence.SetDefaultValue(defaultValue);
         Current = persistence.GetValue<T>();
         SubscribeOnChange(lifetime, value =>
         {

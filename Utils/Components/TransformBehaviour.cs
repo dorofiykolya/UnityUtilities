@@ -6,6 +6,6 @@ namespace Utils
   {
     private Transform _transform;
 
-    public Transform transform { get { return _transform ?? (_transform = base.transform); } }
+    new public Transform transform { get { return _transform ?? (_transform = base.transform); } }
   }
 }
