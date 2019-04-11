@@ -40,7 +40,7 @@ namespace Injection
     {
       if (_propertyInfo != null)
       {
-        _propertyInfo.SetValue(target, value, null);
+        _propertyInfo.SetValue(target, value);
       }
     }
 
