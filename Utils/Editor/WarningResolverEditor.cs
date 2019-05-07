@@ -326,7 +326,6 @@ namespace Utils.Editor
 
     class Insert
     {
-      public int Position;
       public string Text = "";
     }
 
