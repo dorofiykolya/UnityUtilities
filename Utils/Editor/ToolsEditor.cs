@@ -110,7 +110,7 @@ namespace Utils.Editor
     {
       var goCountLast = goCount;
       var name = item.name;
-      if (PrefabUtility.GetCorrespondingObjectFromSource(item) == null && PrefabUtility.GetPrefabObject(item.transform) != null)
+      if (PrefabUtility.GetCorrespondingObjectFromSource(item) == null && PrefabUtility.GetPrefabInstanceHandle(item.transform) != null)
       {
         var instance = Instantiate(item);
         RemoveMissingScriptsInGO(instance, ref goCount, ref componentsCount, ref missingCount);

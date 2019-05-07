@@ -9,11 +9,18 @@ namespace Utils.Editor
     private static readonly string PreferenceKeyEnabled = typeof(HierarchyEditor).FullName + ".enabled";
     private static readonly string PreferenceKeyRightPadding = typeof(HierarchyEditor).FullName + ".rightPadding";
 
-    [PreferenceItem("Hierarchy")]
-    private static void PreferancesGUI()
+    [SettingsProvider]
+    private static SettingsProvider PreferenceProvider()
     {
-      EditorPrefs.SetBool(PreferenceKeyEnabled, EditorGUILayout.Toggle("Enable", EditorPrefs.GetBool(PreferenceKeyEnabled)));
-      EditorPrefs.SetFloat(PreferenceKeyRightPadding, EditorGUILayout.FloatField("Right Padding", EditorPrefs.GetFloat(PreferenceKeyRightPadding, 0f)));
+      var settings = new SettingsProvider("Tools/Hierarchy", SettingsScope.Project, new[] {"hierarchy", "tool"});
+      settings.guiHandler = findText =>
+      {
+        EditorPrefs.SetBool(PreferenceKeyEnabled,
+          EditorGUILayout.Toggle("Enable", EditorPrefs.GetBool(PreferenceKeyEnabled)));
+        EditorPrefs.SetFloat(PreferenceKeyRightPadding,
+          EditorGUILayout.FloatField("Right Padding", EditorPrefs.GetFloat(PreferenceKeyRightPadding, 0f)));
+      };
+      return settings;
     }
 
     static HierarchyEditor()
