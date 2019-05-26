@@ -471,7 +471,6 @@ namespace Utils.Editor
                 Line.Insert(i).Text += " new";
                 Line.SetNewKeyword();
                 return true;
-                break;
               }
             }
           }

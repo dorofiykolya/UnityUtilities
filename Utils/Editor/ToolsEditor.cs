@@ -71,30 +71,6 @@ namespace Utils.Editor
       EditorPrefs.DeleteAll();
     }
 
-    [MenuItem("Tools/[Force]Remove Missing Scripts (On Selected GameObject)")]
-    public static void CleanupMissingScriptsForce()
-    {
-      int goCount = 0;
-      int componentsCount = 0;
-      int missingCount = 0;
-      float goCountParent = 0;
-      var go = Selection.gameObjects;
-
-      var removes = new List<GameObject>();
-
-      foreach (var item in go)
-      {
-        if (f(item.transform))
-          removes.Add(item);
-      }
-
-      foreach (var item in removes)
-      {
-        NewMethod(ref goCount, ref componentsCount, ref missingCount, ref goCountParent, item);
-      }
-      Debug.Log(string.Format("Searched {0} GameObjects, {1} components, removed {2} missing scripts", goCount, componentsCount, missingCount));
-    }
-
     private static Transform f(Transform g)
     {
       foreach (var item in g.GetComponents<Component>())
@@ -104,25 +80,6 @@ namespace Utils.Editor
         if (f(childT))
           return g;
       return null;
-    }
-
-    private static void NewMethod(ref int goCount, ref int componentsCount, ref int missingCount, ref float goCountParent, GameObject item)
-    {
-      var goCountLast = goCount;
-      var name = item.name;
-      if (PrefabUtility.GetCorrespondingObjectFromSource(item) == null && PrefabUtility.GetPrefabInstanceHandle(item.transform) != null)
-      {
-        var instance = Instantiate(item);
-        RemoveMissingScriptsInGO(instance, ref goCount, ref componentsCount, ref missingCount);
-        if (goCountLast != goCount)
-          PrefabUtility.ReplacePrefab(instance, item);
-        //DestroyImmediate(instance);
-      }
-      else
-      {
-        RemoveMissingScriptsInGO(item, ref goCount, ref componentsCount, ref missingCount);
-      }
-      goCountParent++;
     }
 
     [MenuItem("Assets/Tools/Rename To Underscore")]
