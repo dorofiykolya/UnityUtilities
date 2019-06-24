@@ -5,7 +5,6 @@ namespace Injection
 {
   public class Injector : IInjector, IDisposable
   {
-    private readonly Dictionary<Type, IMapping> _map;
     private readonly Dictionary<Type, IProvider> _provider;
     private IInjector _parent;
 
@@ -17,7 +16,6 @@ namespace Injection
 
     public Injector(IInjector parent, DescriptionProvider provider)
     {
-      _map = new Dictionary<Type, IMapping>(128);
       _provider = new Dictionary<Type, IProvider>(128);
 
       Parent = parent;
@@ -50,7 +48,6 @@ namespace Injection
 
     public void Clear()
     {
-      _map.Clear();
       _provider.Clear();
     }
 
@@ -66,12 +63,7 @@ namespace Injection
 
     public IMapping Map(Type type)
     {
-      IMapping result;
-      if (!_map.TryGetValue(type, out result))
-      {
-        result = new Mapping(this, type);
-        _map.Add(type, result);
-      }
+      IMapping result = new Mapping(this, type);
       return result;
     }
 
@@ -82,13 +74,7 @@ namespace Injection
 
     public void Unmap(Type type)
     {
-      IMapping result;
-      if (_map.TryGetValue(type, out result))
-      {
-        UnmapProvider(result.Type);
-        result.Dispose();
-        _map.Remove(type);
-      }
+      UnmapProvider(type);
     }
 
     public IInjector Parent
