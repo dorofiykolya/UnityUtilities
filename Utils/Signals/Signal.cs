@@ -83,14 +83,15 @@ namespace Utils
         {
           action();
         }
+#if !UNITY_EDITOR
         catch (Exception ex)
         {
-#if UNITY_EDITOR
-          Debug.LogError(ex.StackTrace);
-          throw ex;
-#else
           Debug.LogError("Error firing, exception: " + ex);
+        }
 #endif
+        finally
+        {
+
         }
       }
 

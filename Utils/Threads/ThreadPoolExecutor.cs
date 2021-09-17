@@ -23,7 +23,11 @@ namespace Utils
       {
         try
         {
+#if UNITY_WEBGL
+          _dispatcher.Dispatch(action);
+#else
           action();
+#endif
           _dispatcher.Dispatch(result.Resolve);
         }
         catch (Exception exception)
@@ -48,7 +52,14 @@ namespace Utils
       {
         try
         {
-          var data = action();
+          T data = default;
+#if UNITY_WEBGL
+          _dispatcher.Dispatch(() => { data = action(); });
+#else
+          data = action();
+#endif
+
+
           _dispatcher.Dispatch(() => result.Resolve(data));
         }
         catch (Exception exception)
