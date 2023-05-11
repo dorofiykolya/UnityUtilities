@@ -188,6 +188,23 @@ namespace Utils
           _onFail = onFail;
         }
       }
+      else
+      {
+        if (Error != null)
+        {
+          if (onFail != null)
+          {
+            onFail(Error);
+          }
+        }
+        else
+        {
+          if (onSuccess != null)
+          {
+            onSuccess();
+          }
+        }
+      }
     }
   }
 }
